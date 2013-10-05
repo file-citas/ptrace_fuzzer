@@ -40,10 +40,12 @@ tabmodel::tabmodel(const std::set<Tag*>& t, QObject *parent) :
 
 int tabmodel::rowCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return size;
 }
 int tabmodel::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return 3;
 }
 QVariant tabmodel::data(const QModelIndex &index, int role) const
@@ -108,6 +110,7 @@ QVariant tabmodel::headerData(int section, Qt::Orientation orientation, int role
 void tabmodel::selectionChangedSlot(const QItemSelection &newSelection,
                                     const QItemSelection &oldSelection)
 {
+	if(newSelection.indexes().isEmpty()) return;
     QModelIndex index = newSelection.indexes()[0];
     int row = index.row();
     std::map<int,tagitem*, greater>::const_iterator it =
