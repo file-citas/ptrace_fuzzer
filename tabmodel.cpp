@@ -1,6 +1,7 @@
 #include "tabmodel.h"
 #include "access.h"
 #include <stdio.h>
+#include <QDebug>
 
 std::map<Tag*, std::vector<int> > tag_idx;
 tabmodel::tabmodel(const std::set<Tag*>& t, QObject *parent) :
@@ -133,6 +134,26 @@ void tabmodel::selectionChangedSlot(const QItemSelection &newSelection,
 		emit dataChanged(createIndex(item->indices().first().row(), 0, 0),
 				createIndex(item->indices().last().row(), columnCount(), 0));
 	}
+}
+
+void tabmodel::CodeSelectionChangedSlot(const addr_t& start, const addr_t& stop)
+{
+    std::map<int,tagitem*, greater>::const_iterator kt = ti.begin();
+    for( ; kt!=ti.end(); ++kt) {
+        kt->second->lowlight();
+    }
+    emit dataChanged(createIndex(0, 0, 0),
+            createIndex(rowCount(), columnCount(), 0));
+    for(addr_t addr=start; addr<=stop; ++addr) {
+        for( auto tagToItem : tti) {
+            const Tag* tag = tagToItem.first;
+            tagitem* tagi = tagToItem.second;
+            if(tag->rip_access().find(addr) != tag->rip_access().end()) {
+                tagi->highlight();
+            }
+        }
+    }
+
 }
 
 tagitem::tagitem(Tag* t, double hue, QModelIndexList indices) :

@@ -24,6 +24,17 @@ MainWindow::MainWindow(Fuzzer* t, QWidget *parent) :
     ui->codetableview->setModel(codeview);
     ui->codetableview->horizontalHeader()->setStretchLastSection(true);
     ui->codetableview->verticalHeader()->hide();
+
+    connect(ui->codetableview->selectionModel(),
+            SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+            codeview,
+            SLOT(selectionChangedSlot(const QItemSelection &, const QItemSelection &)));
+
+    connect(codeview,
+            SIGNAL(selectionChanged(const addr_t& , const addr_t& )),
+            tagview,
+            SLOT(CodeSelectionChangedSlot(const addr_t& , const addr_t& )));
+
 }
 
 MainWindow::~MainWindow()

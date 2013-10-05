@@ -54,6 +54,7 @@ public slots:
 
     void selectionChangedSlot(const QItemSelection &newSelection,
                               const QItemSelection &oldSelection);
+    void CodeSelectionChangedSlot(const addr_t& , const addr_t&);
 
 
 private:

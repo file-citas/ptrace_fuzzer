@@ -71,5 +71,17 @@ QVariant Codemodel::headerData(int section, Qt::Orientation orientation, int rol
 void Codemodel::selectionChangedSlot(const QItemSelection &newSelection,
 		const QItemSelection &oldSelection)
 {
+    int start_row = 0;
+    int stop_row = 0;
+    if(!newSelection.indexes().isEmpty()) {
+        start_row = newSelection.indexes().first().row();
+        stop_row = newSelection.indexes().last().row();
+    }
+    if(!oldSelection.indexes().isEmpty()) {
+        start_row = qMin(start_row, oldSelection.indexes().first().row());
+        stop_row = qMax(stop_row, oldSelection.indexes().last().row());
+    }
+
+    emit selectionChanged(code_[start_row]->addr, code_[stop_row]->addr);
 }
 

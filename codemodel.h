@@ -21,6 +21,7 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
 signals:
+    void selectionChanged(const addr_t& from, const addr_t& to);
     
 public slots:
 

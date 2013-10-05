@@ -16,7 +16,9 @@ class Tag
 		Tag(Access* a);
 		~Tag();
 
-		const Access* lastAccess() const;
+        const Access* lastAccess() const;
+        const std::map<addr_t, Access*>& rip_access() const
+        {return rip_access_;}
         const Val* init_val() const {return init_val_;}
 		addr_t loc() const;
 		int len() const;
