@@ -8,6 +8,9 @@
 
 typedef addr_t _OffsetType;
 
+class State;
+class Memstate;
+
 class InvalidRIP : public std::exception
 {
 	public:
@@ -54,6 +57,13 @@ class T
 		int protect_stack(int prot);
 		// read from target process
 		int read(addr_t loc, void* val, size_t len) const;
+		// write to target process
+		int write(addr_t loc, void* val, size_t len) const;
+
+		// reset target to original state
+		void reset();
+		// run programm unitl rip is reached
+		void runTo(addr_t rip);
 
 	private:
 		T() : init_(false), pid_(0) {};
@@ -62,8 +72,6 @@ class T
 
 		// get stack segment from /proc/*/maps
 		int getStackSegment(addr_t& sstart, addr_t& sstop);
-		// write to target process
-		int write(addr_t loc, void* val, size_t len) const;
 		// protect arbitrary memory reagion
 		int protect(addr_t from, addr_t to, int prot);
 
@@ -86,6 +94,7 @@ class T
 
 		_CodeInfo ci_;
 		std::map<addr_t, _DInst*> rip_i_;
+		State* initial_state_;
 };
 
 #endif

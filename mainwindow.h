@@ -3,7 +3,8 @@
 
 #include <QMainWindow>
 #include "tag.h"
-#include "tracer.h"
+#include "fuzzer.h"
+//#include "fuzzer.h"
 #include "tabmodel.h"
 #include "codemodel.h"
 
@@ -16,12 +17,12 @@ class MainWindow : public QMainWindow
     Q_OBJECT
     
 public:
-    MainWindow(Tracer* t, QWidget *parent = 0);
+    MainWindow(Fuzzer* t, QWidget *parent = 0);
     ~MainWindow();
     
 private:
     Ui::MainWindow *ui;
-    Tracer* tracer;
+    Fuzzer* fuzzer;
     tabmodel* tagview;
     Codemodel* codeview;
 };

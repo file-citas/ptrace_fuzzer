@@ -11,7 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = bfuzz
 TEMPLATE = app
 LIBS += -lelf -ldistorm3 -lm
-QMAKE_CXXFLAGS += -std=c++0x
+QMAKE_CXXFLAGS += -std=c++0x -g
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -25,7 +25,10 @@ SOURCES += main.cpp\
     branch.cpp \
     access.cpp \
     tabmodel.cpp \
-    codemodel.cpp
+    codemodel.cpp \
+    fuzzer.cpp \
+    state.cpp \
+    vrange.cpp
 
 HEADERS  += mainwindow.h \
     val.h \
@@ -43,6 +46,9 @@ HEADERS  += mainwindow.h \
     access.h \
     myelf.h \
     tabmodel.h \
-    codemodel.h
+    codemodel.h \
+    fuzzer.h \
+    state.h \
+    vrange.h
 
 FORMS    += mainwindow.ui

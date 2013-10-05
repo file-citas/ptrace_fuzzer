@@ -40,3 +40,10 @@ int Val::mkStr()
 	str_[i] = 0;
 	return i;
 }
+
+Val& Val::operator++()
+{
+	long long* x = (long long*) val_;
+	*x+=0x1;
+	return *this;
+}

@@ -2,14 +2,14 @@
 #include "ui_mainwindow.h"
 #include "target.h"
 
-MainWindow::MainWindow(Tracer* t, QWidget *parent) :
+MainWindow::MainWindow(Fuzzer* t, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    tracer(t)
+    fuzzer(t)
 {
     ui->setupUi(this);
 
-    tagview = new tabmodel(t->tags(), this);
+    tagview = new tabmodel(t->tracer()->tags(), this);
     ui->tagtableview->setModel(tagview);
     ui->tagtableview->verticalHeader()->hide();
     ui->tagtableview->horizontalHeader()->setStretchLastSection(true);
@@ -23,6 +23,7 @@ MainWindow::MainWindow(Tracer* t, QWidget *parent) :
     codeview = new Codemodel(T::arget().getCode(), T::arget().getCi(), this);
     ui->codetableview->setModel(codeview);
     ui->codetableview->horizontalHeader()->setStretchLastSection(true);
+    ui->codetableview->verticalHeader()->hide();
 }
 
 MainWindow::~MainWindow()

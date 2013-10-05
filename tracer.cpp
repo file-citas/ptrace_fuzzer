@@ -12,7 +12,8 @@
 #include <sys/mman.h>
 #include <math.h>
 
-Tracer::Tracer(int argc, char** argv)
+Tracer::Tracer(int argc, char** argv) :
+	heap_min_(0), heap_max_(0), stack_min_(0), stack_max_(0)
 {
 	// prep target
 	T::arget().init(argv);
@@ -220,6 +221,8 @@ int Tracer::addTag(Tag* t)
 		delete t;
 		return 0;
 	}
+	stack_min_ = fmin(stack_min_, t->loc());
+	stack_max_ = fmax(stack_max_, t->loc() + t->len());
 	for(int i=0; i<t->len(); ++i)
 		mem_tags_.insert(std::pair<addr_t, Tag*>(t->loc()+i, t));
 	if(t->lastAccess()!=NULL)

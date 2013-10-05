@@ -16,6 +16,9 @@ class Val
 
 		bool cmp(Val& val);
 		const char* str() const {return str_;}
+
+		// prefix inc
+		Val& operator++();
 	
 	private:
 		int mkStr();

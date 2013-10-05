@@ -1,6 +1,7 @@
 #include "types.h"
 #include "target.h"
 #include "distorm.h"
+#include "state.h"
 
 #include <stdlib.h>
 #include <sys/user.h>     /* struct user */
@@ -25,12 +26,12 @@
 unsigned char mpsyc [] = {0xb8, 0x0a, 0, 0, 0, 0x0f, 0x05, 0x5d, 0xc3, 0x55, 0x48};
 /*
  *This would be better but qt messes everything up :(
-void mprotect_syscall()
-{
-    asm("syscall;"  : : "a"(0xa));
-}
-void mprotect_syscall_end() {}
-*/
+ void mprotect_syscall()
+ {
+ asm("syscall;"  : : "a"(0xa));
+ }
+ void mprotect_syscall_end() {}
+ */
 
 class NoInit : public std::exception
 {
@@ -48,6 +49,7 @@ T::~T()
 	std::map<addr_t, _DInst*>::iterator it = rip_i_.begin();
 	for( ; it!=rip_i_.end(); ++it)
 		delete it->second;
+	delete initial_state_;
 }
 
 int T::init(char** argv)
@@ -96,7 +98,7 @@ int T::init(char** argv)
 			exit(1);
 		}
 		fscanf(fp,"%lx-%lx",
-                &code_start_, &code_stop_);
+				&code_start_, &code_stop_);
 		while(fgets(buf, sizeof(buf), fp)) {
 			if(strstr(buf, "stack")!=NULL) {
 				sscanf(buf,"%lx-%lx",
@@ -104,6 +106,11 @@ int T::init(char** argv)
 			}    
 		} 
 		fclose(fp);
+
+		// store initial state
+		struct user_regs_struct regs;
+		safe_ptrace(PTRACE_GETREGS, 0, &regs);
+		initial_state_ = new State(regs, Memstate(0,0), Memstate(stack_start_, stack_start_+256));
 		//code_start_ = elf_->get_func((char*)"_start");
 		// TODO: allgemein richtig?
 		code_start_ = elf_->get_func((char*)"frame_dummy") + 0x2c;
@@ -112,58 +119,58 @@ int T::init(char** argv)
 		fprintf(stderr, "+%5d+ stack segment %lx-%lx\n", pid_, stack_start_, stack_stop_);
 
 		syscall_addr_ = elf_->get_func((char*)"_start");
-        //char* mp = (char*)&mprotect_syscall+4;
-        unsigned char* mp = mpsyc;
-        //size_t protect_stack_none_len = (addr_t)mprotect_syscall_end - (addr_t)mprotect_syscall-2;
-        size_t protect_stack_none_len = 11;
-        fprintf(stderr, "Writing mprotect at %lx (%ld bytes)\n", syscall_addr_, protect_stack_none_len);
+		//char* mp = (char*)&mprotect_syscall+4;
+		unsigned char* mp = mpsyc;
+		//size_t protect_stack_none_len = (addr_t)mprotect_syscall_end - (addr_t)mprotect_syscall-2;
+		size_t protect_stack_none_len = 11;
+		fprintf(stderr, "Writing mprotect at %lx (%ld bytes)\n", syscall_addr_, protect_stack_none_len);
 
-	write(syscall_addr_, 
-			(void*)mp, protect_stack_none_len);
+		write(syscall_addr_, 
+				(void*)mp, protect_stack_none_len);
 
-	const size_t nInst = (code_stop_ - code_start_); // TODO
-	unsigned char my_code_stream[nInst];
-	_DInst result[nInst];
-	memset(result, 0, nInst*sizeof(_DInst));
-	unsigned int instructions_count = 0;
+		const size_t nInst = (code_stop_ - code_start_); // TODO
+		unsigned char my_code_stream[nInst];
+		_DInst result[nInst];
+		memset(result, 0, nInst*sizeof(_DInst));
+		unsigned int instructions_count = 0;
 
-	read(code_start_, (void*)my_code_stream, nInst);
+		read(code_start_, (void*)my_code_stream, nInst);
 
-	_CodeInfo ci = {0};
-	ci.code = my_code_stream;
-	ci.codeLen = sizeof(my_code_stream);
-	ci.dt = Decode64Bits; // TODO evaluate this (prob in elf class)
-	ci.codeOffset = code_start_;
-	ci.features = 0;
+		_CodeInfo ci = {0};
+		ci.code = my_code_stream;
+		ci.codeLen = sizeof(my_code_stream);
+		ci.dt = Decode64Bits; // TODO evaluate this (prob in elf class)
+		ci.codeOffset = code_start_;
+		ci.features = 0;
 
-	distorm_decompose(&ci, result, sizeof(result)/sizeof(result[0]), &instructions_count);
+		distorm_decompose(&ci, result, sizeof(result)/sizeof(result[0]), &instructions_count);
 
-	std::vector<addr_t> cjmp;
-	// well, if instruction_count == 0, we won't enter the loop.
-	for (unsigned int i = 0; i < instructions_count; i++) {
-		if (result[i].flags == FLAG_NOT_DECODABLE) {
-			// handle instruction error!
-			//break;
-			//fprintf(stderr, "ERROR decoding\n");
-			continue;
+		std::vector<addr_t> cjmp;
+		// well, if instruction_count == 0, we won't enter the loop.
+		for (unsigned int i = 0; i < instructions_count; i++) {
+			if (result[i].flags == FLAG_NOT_DECODABLE) {
+				// handle instruction error!
+				//break;
+				//fprintf(stderr, "ERROR decoding\n");
+				continue;
+			}
+
+
+			if(META_GET_FC(result[i].meta) == FC_CND_BRANCH) {
+				fprintf(stderr, "conditional jump at %lx\n", result[i].addr);
+				cjmp.push_back(result[i].addr);
+			}
+			_DInst* inst = new _DInst;
+			*inst = result[i];
+			rip_i_.insert(std::pair<addr_t, _DInst*>(
+						inst->addr, inst));
+			//_DecodedInst di;
+			//distorm_format(&ci, inst, &di);
+			//printf("%lx: %s %s\n", inst->addr, di.mnemonic.p, di.operands.p);
 		}
-
-
-		if(META_GET_FC(result[i].meta) == FC_CND_BRANCH) {
-			fprintf(stderr, "conditional jump at %lx\n", result[i].addr);
-			cjmp.push_back(result[i].addr);
-		}
-		_DInst* inst = new _DInst;
-		*inst = result[i];
-		rip_i_.insert(std::pair<addr_t, _DInst*>(
-					inst->addr, inst));
-		//_DecodedInst di;
-		//distorm_format(&ci, inst, &di);
-		//printf("%lx: %s %s\n", inst->addr, di.mnemonic.p, di.operands.p);
-	}
-	for(size_t i=0; i<cjmp.size(); ++i)
-		bp_->set(cjmp[i]);
-	ci_ = ci;
+		for(size_t i=0; i<cjmp.size(); ++i)
+			bp_->set(cjmp[i]);
+		ci_ = ci;
 
 	}
 	return 0;
@@ -210,16 +217,20 @@ int T::singlestep()
 int T::write(addr_t addr, void *vptr, size_t len) const
 {
 	if(!init_) {NoInit exp; throw(exp);}
-	assert(len>sizeof(long));
+	//assert(len>sizeof(long));
 
-	size_t i, count;
-	long word;
-	i = count = 0;
+	size_t i, j;
+	long new_word;
+	long orig_word;
+	unsigned char* ptr = (unsigned char*)vptr;
+	i = j =0;
 	while (i < len) {
-		memcpy(&word, (void*)((long)vptr + count), sizeof(word));
-		safe_ptrace(PTRACE_POKETEXT, addr + count, (void*)word);
-		count += sizeof(long);
-		i++;
+		new_word = *((long*)(ptr + i));
+		orig_word = safe_ptrace(PTRACE_PEEKTEXT, addr + i, NULL);
+		for(j=0; j<sizeof(long) && j+i<len; ++j)
+			((unsigned char*)&orig_word)[j] = ((unsigned char*)&new_word)[j];
+		safe_ptrace(PTRACE_POKETEXT, addr + i, (void*)orig_word);
+		i+=j;
 	}
 	return i;
 }
@@ -227,13 +238,12 @@ int T::write(addr_t addr, void *vptr, size_t len) const
 int T::read(addr_t addr, void *vptr, size_t len) const
 {
 	if(!init_) {NoInit exp; throw(exp);}
-	size_t i, j, count;
+	size_t i, j;
 	long word;
 	unsigned char* ptr = (unsigned char*)vptr;
-	count = i = 0;
+	i = j = 0;
 	while (i < len) {
-		word = safe_ptrace(PTRACE_PEEKTEXT, addr + count, NULL);
-		count += sizeof(word);
+		word = safe_ptrace(PTRACE_PEEKTEXT, addr + i, NULL);
 		for(j=0; j<sizeof(word) && j+i<len; j++) 
 			ptr[i+j] = ((unsigned char*)&word)[j];
 		i+=j;
@@ -315,4 +325,19 @@ const _DInst* T::getI(addr_t loc) const
 const _CodeInfo* T::getCi() const
 {
 	return &ci_;
+}
+
+void T::reset()
+{
+	initial_state_->restore();
+}
+
+void T::runTo(addr_t rip)
+{
+	assert(inCode(rip));
+	bp_->set(rip);
+	safe_ptrace(PTRACE_CONT, 0, NULL);
+	int status;
+	waitpid(pid_, &status, 0);
+	bp_->unset(rip);
 }
