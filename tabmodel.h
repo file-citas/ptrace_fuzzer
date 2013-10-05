@@ -24,6 +24,7 @@ public:
     const QColor* color() const { return color_;}
     void highlight() {highlight_ =true; color_->setHsv(hue_, 128, 255);}
     void lowlight() {highlight_ =false; color_->setHsv(hue_, 32, 255);}
+    const QModelIndexList& indices() const { return indices_;}
     //std::set<tagitem*> tf() { return tforw_;}
     //void addTf(tagitem* ti);
     //void addTb(tagitem* tb);

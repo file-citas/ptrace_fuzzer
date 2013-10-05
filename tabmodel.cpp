@@ -119,6 +119,8 @@ void tabmodel::selectionChangedSlot(const QItemSelection &newSelection,
     for( ; jt!=tf.end(); ++jt) {
 	    tagitem* item = tti.find(jt->second->tag)->second;
 	    item->highlight();
+	    emit dataChanged(createIndex(item->indices().first().row(), 0, 0),
+		 createIndex(item->indices().last().row(), 3, 0));
     }
 }
 
