@@ -24,13 +24,13 @@ public:
     const QColor* color() const { return color_;}
     void highlight() {highlight_ =true; color_->setHsv(hue_, 128, 255);}
     void lowlight() {highlight_ =false; color_->setHsv(hue_, 32, 255);}
-    std::set<tagitem*> tf() { return tforw_;}
-    void addTf(tagitem* ti);
-    void addTb(tagitem* tb);
+    //std::set<tagitem*> tf() { return tforw_;}
+    //void addTf(tagitem* ti);
+    //void addTb(tagitem* tb);
 private:
     Tag* tag_;
-    std::set<tagitem*> tforw_;
-    std::set<tagitem*> tbackw_;
+    //std::set<tagitem*> tforw_;
+    //std::set<tagitem*> tbackw_;
     QColor* color_;
     QModelIndexList indices_;
     double hue_;
@@ -58,6 +58,7 @@ public slots:
 private:
     //std::map<int, Tag*, greater> tags;
     //std::map<int, QColor, greater> color;
+    std::map<Tag*, tagitem*> tti;
     std::map<int, tagitem*, greater> ti;
     int size;
     addr_t rip;
