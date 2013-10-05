@@ -189,7 +189,7 @@ int T::singlestep()
 				pid_, WEXITSTATUS(status));
 		exit(0);
 	}
-	struct siginfo si;
+	siginfo_t si;
 	safe_ptrace(PTRACE_GETSIGINFO, 0, &si); 
 	struct user_regs_struct regs;
 	safe_ptrace(PTRACE_GETREGS, 0, &regs);
