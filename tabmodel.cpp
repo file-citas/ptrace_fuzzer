@@ -43,11 +43,13 @@ int tabmodel::rowCount(const QModelIndex &parent) const
     Q_UNUSED(parent);
     return size;
 }
+
 int tabmodel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
     return 3;
 }
+
 QVariant tabmodel::data(const QModelIndex &index, int role) const
 {
     int row = index.row();
@@ -123,7 +125,7 @@ void tabmodel::selectionChangedSlot(const QItemSelection &newSelection,
 	    tagitem* item = tti.find(jt->second->tag)->second;
 	    item->highlight();
 	    emit dataChanged(createIndex(item->indices().first().row(), 0, 0),
-		 createIndex(item->indices().last().row(), 3, 0));
+		 createIndex(item->indices().last().row(), columnCount(), 0));
     }
 }
 
