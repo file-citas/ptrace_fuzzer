@@ -37,7 +37,8 @@ class T
 		Break* bp() { return bp_;}
 		const _DInst* getI(addr_t rip) const;
 		const _CodeInfo* getCi() const;
-        addr_t cstop() const {return code_stop_;}
+		const std::map<addr_t, _DInst*>& getCode() const { return rip_i_;}
+		addr_t cstop() const {return code_stop_;}
 
 		// helper
 		bool inCode(addr_t loc) const;

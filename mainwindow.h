@@ -5,6 +5,7 @@
 #include "tag.h"
 #include "tracer.h"
 #include "tabmodel.h"
+#include "codemodel.h"
 
 namespace Ui {
 class MainWindow;
@@ -21,7 +22,8 @@ public:
 private:
     Ui::MainWindow *ui;
     Tracer* tracer;
-    tabmodel* tm;
+    tabmodel* tagview;
+    Codemodel* codeview;
 };
 
 #endif // MAINWINDOW_H

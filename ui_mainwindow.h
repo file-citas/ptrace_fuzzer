@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Sat Oct 5 02:09:34 2013
+** Created: Sat Oct 5 13:15:42 2013
 **      by: Qt User Interface Compiler version 4.8.3
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -30,6 +30,7 @@ class Ui_MainWindow
 public:
     QWidget *centralWidget;
     QHBoxLayout *horizontalLayout;
+    QTableView *codetableview;
     QTableView *tagtableview;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
@@ -46,6 +47,11 @@ public:
         horizontalLayout->setSpacing(6);
         horizontalLayout->setContentsMargins(11, 11, 11, 11);
         horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
+        codetableview = new QTableView(centralWidget);
+        codetableview->setObjectName(QString::fromUtf8("codetableview"));
+
+        horizontalLayout->addWidget(codetableview);
+
         tagtableview = new QTableView(centralWidget);
         tagtableview->setObjectName(QString::fromUtf8("tagtableview"));
 
