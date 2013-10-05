@@ -112,30 +112,36 @@ QVariant tabmodel::headerData(int section, Qt::Orientation orientation, int role
 void tabmodel::selectionChangedSlot(const QItemSelection &newSelection,
                                     const QItemSelection &oldSelection)
 {
+	std::map<int,tagitem*, greater>::const_iterator kt = ti.begin();
+	for( ; kt!=ti.end(); ++kt) {
+		kt->second->lowlight();
+	}
+	emit dataChanged(createIndex(0, 0, 0),
+			createIndex(rowCount(), columnCount(), 0));
 	if(newSelection.indexes().isEmpty()) return;
-    QModelIndex index = newSelection.indexes()[0];
-    int row = index.row();
-    std::map<int,tagitem*, greater>::const_iterator it =
-            ti.lower_bound(row);
-    if(it==ti.end()) return;
-    const Tag* tag = it->second->tag();
-    std::map<addr_t, Trace*> tf = tag->tforw();
-    std::map<addr_t, Trace*>::const_iterator jt = tf.begin();
-    for( ; jt!=tf.end(); ++jt) {
-	    tagitem* item = tti.find(jt->second->tag)->second;
-	    item->highlight();
-	    emit dataChanged(createIndex(item->indices().first().row(), 0, 0),
-		 createIndex(item->indices().last().row(), columnCount(), 0));
-    }
+	QModelIndex index = newSelection.indexes()[0];
+	int row = index.row();
+	std::map<int,tagitem*, greater>::const_iterator it =
+		ti.lower_bound(row);
+	if(it==ti.end()) return;
+	const Tag* tag = it->second->tag();
+	std::map<addr_t, Trace*> tf = tag->tforw();
+	std::map<addr_t, Trace*>::const_iterator jt = tf.begin();
+	for( ; jt!=tf.end(); ++jt) {
+		tagitem* item = tti.find(jt->second->tag)->second;
+		item->highlight();
+		emit dataChanged(createIndex(item->indices().first().row(), 0, 0),
+				createIndex(item->indices().last().row(), columnCount(), 0));
+	}
 }
 
 tagitem::tagitem(Tag* t, double hue, QModelIndexList indices) :
-    tag_(t), indices_(indices), hue_(hue), highlight_(false)
+	tag_(t), indices_(indices), hue_(hue), highlight_(false)
 {
-    color_ = new QColor();
-    color_->setHsv(hue_, 32, 255);
+	color_ = new QColor();
+	color_->setHsv(hue_, 32, 255);
 }
 tagitem::~tagitem()
 {
-    // todo
+	// todo
 }
