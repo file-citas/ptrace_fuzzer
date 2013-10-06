@@ -25,6 +25,16 @@
       </item>
      </layout>
     </item>
+    <item>
+     <widget class="QTableView" name="vrangeTableView"/>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton">
+      <property name="text">
+       <string>Fuzz</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -49,5 +59,25 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>startFuzz()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>183</x>
+     <y>333</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>186</x>
+     <y>341</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>startFuzz()</slot>
+ </slots>
 </ui>

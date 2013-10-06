@@ -12,13 +12,13 @@ VRange::~VRange()
 {
 }
 
-const Val& VRange::next()
+const Val& VRange::next() const
 {
 	// TODO
 	return ++current_;
 }
 
-void VRange::setNext() 
+void VRange::setNext() const
 {
 	// TODO
 	T::arget().write(tag_->loc(), (void*)(++current_).val(), tag_->len());

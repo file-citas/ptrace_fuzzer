@@ -80,3 +80,15 @@ void Codemodel::selectionChangedSlot(const QItemSelection &newSelection,
     emit selectionChanged(code_[start_row]->addr, code_[stop_row]->addr);
 }
 
+addr_t Codemodel::getSelRipFrom()  const
+{
+    int start_row = currentSelection.indexes().first().row();
+    return code_[start_row]->addr;
+}
+
+
+addr_t Codemodel::getSelRipTo()  const
+{
+    int stop_row = currentSelection.indexes().last().row();
+    return code_[stop_row]->addr;
+}

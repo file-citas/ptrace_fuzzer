@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Sat Oct 5 21:00:23 2013
+** Created: Sun Oct 6 17:11:37 2013
 **      by: Qt User Interface Compiler version 4.8.3
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -18,6 +18,7 @@
 #include <QtGui/QHeaderView>
 #include <QtGui/QMainWindow>
 #include <QtGui/QMenuBar>
+#include <QtGui/QPushButton>
 #include <QtGui/QStatusBar>
 #include <QtGui/QTableView>
 #include <QtGui/QToolBar>
@@ -34,6 +35,8 @@ public:
     QHBoxLayout *horizontalLayout;
     QTableView *tagtableview;
     QTableView *codetableview;
+    QTableView *vrangeTableView;
+    QPushButton *pushButton;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -65,6 +68,16 @@ public:
 
         verticalLayout->addLayout(horizontalLayout);
 
+        vrangeTableView = new QTableView(centralWidget);
+        vrangeTableView->setObjectName(QString::fromUtf8("vrangeTableView"));
+
+        verticalLayout->addWidget(vrangeTableView);
+
+        pushButton = new QPushButton(centralWidget);
+        pushButton->setObjectName(QString::fromUtf8("pushButton"));
+
+        verticalLayout->addWidget(pushButton);
+
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QString::fromUtf8("menuBar"));
@@ -78,6 +91,7 @@ public:
         MainWindow->setStatusBar(statusBar);
 
         retranslateUi(MainWindow);
+        QObject::connect(pushButton, SIGNAL(clicked()), MainWindow, SLOT(startFuzz()));
 
         QMetaObject::connectSlotsByName(MainWindow);
     } // setupUi
@@ -85,6 +99,7 @@ public:
     void retranslateUi(QMainWindow *MainWindow)
     {
         MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", 0, QApplication::UnicodeUTF8));
+        pushButton->setText(QApplication::translate("MainWindow", "Fuzz", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 
 };

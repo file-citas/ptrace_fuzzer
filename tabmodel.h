@@ -5,14 +5,16 @@
 #include <QItemSelection>
 #include <QColor>
 #include <QBrush>
+#include <QAction>
+#include <QContextMenuEvent>
 #include <map>
 #include <set>
 #include "tag.h"
 
 class greater {
-    public:
-        bool operator()(const int& x,const int& y) const {
-            return (x-y)>0; }
+public:
+    bool operator()(const int& x,const int& y) const {
+        return (x-y)>0; }
 };
 
 class tagitem
@@ -48,9 +50,16 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
+    QAction* setVRange;
+
+protected:
+
 signals:
+    void addVRange_signal(const Tag* tag, const Val& from, const Val& to);
     
 public slots:
+    void on_actionRightClick_triggered(const QPoint&);
+    void on_setVRange_triggered();
 
     void selectionChangedSlot(const QItemSelection &newSelection,
                               const QItemSelection &oldSelection);

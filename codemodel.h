@@ -19,6 +19,8 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+    addr_t getSelRipFrom() const;
+    addr_t getSelRipTo() const;
 
 signals:
     void selectionChanged(const addr_t& from, const addr_t& to);

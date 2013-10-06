@@ -14,7 +14,7 @@ Fuzzer::~Fuzzer()
 	delete tracer_;
 }
 
-void Fuzzer::fuzz(addr_t from, addr_t to, const std::vector<VRange*>& vrange)
+void Fuzzer::fuzz(addr_t from, addr_t to, const std::vector<const VRange*>& vrange)
 {
 	// reset target
 	T::arget().reset();
