@@ -113,14 +113,17 @@ QVariant tabmodel::headerData(int section, Qt::Orientation orientation, int role
 void tabmodel::selectionChangedSlot(const QItemSelection &newSelection,
                                     const QItemSelection &oldSelection)
 {
+    currentSelection.merge(oldSelection, QItemSelectionModel::Deselect);
+    currentSelection.merge(newSelection, QItemSelectionModel::Select);
+
 	std::map<int,tagitem*, greater>::const_iterator kt = ti.begin();
 	for( ; kt!=ti.end(); ++kt) {
 		kt->second->lowlight();
 	}
 	emit dataChanged(createIndex(0, 0, 0),
 			createIndex(rowCount(), columnCount(), 0));
-	if(newSelection.indexes().isEmpty()) return;
-	QModelIndex index = newSelection.indexes()[0];
+    if(currentSelection.indexes().isEmpty()) return;
+    QModelIndex index = currentSelection.indexes()[0];
 	int row = index.row();
 	std::map<int,tagitem*, greater>::const_iterator it =
 		ti.lower_bound(row);

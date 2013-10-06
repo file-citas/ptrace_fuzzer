@@ -34,6 +34,7 @@ private:
     std::vector<QString> strCode_;
     std::vector<QColor> color_;
     std::map<addr_t, _DInst*> codeToRip_;
+    QItemSelection currentSelection;
     const _CodeInfo* ci_;
     int size_;
 };

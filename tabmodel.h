@@ -64,6 +64,7 @@ private:
     std::map<int, tagitem*, greater> ti;
     int size;
     addr_t rip;
+    QItemSelection currentSelection;
 };
 
 #endif // TABMODEL_H

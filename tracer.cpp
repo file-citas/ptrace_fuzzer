@@ -81,7 +81,7 @@ int Tracer::trace()
 	T::arget().protect_stack(PROT_READ|PROT_WRITE);
 
 	// if the next instruction is not in our area we break on return
-	if(!T::arget().inCode(regs.rip)) {
+    if(!T::arget().inCode(regs.rip)) {
 		fprintf(stderr, "%lx not in code\n", regs.rip);
 		addr_t returnadr = T::arget().safe_ptrace(PTRACE_PEEKTEXT, 
 				regs.rsp, NULL);
