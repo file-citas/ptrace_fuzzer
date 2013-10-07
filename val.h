@@ -13,8 +13,9 @@ class Val
 
 		int len() const {return len_;}
 		const unsigned char* val() const {return val_;}
+        void val(unsigned char* newVal, int newLen);
 
-		bool cmp(Val& val);
+        bool cmp(const Val& val) const;
 		const char* str() const {return str_;}
 
 		// prefix inc

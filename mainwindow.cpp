@@ -53,11 +53,15 @@ MainWindow::MainWindow(Fuzzer* t, QWidget *parent) :
     vrangeview = new vrangemodel();
     ui->vrangeTableView->setModel(vrangeview);
     ui->vrangeTableView->verticalHeader()->hide();
+    ui->vrangeTableView->setEditTriggers(QAbstractItemView::AllEditTriggers);
 
     connect(tagview,
             SIGNAL(addVRange_signal(const Tag*,Val,Val)),
             vrangeview,
             SLOT(addVRange_slot(const Tag*,Val,Val)));
+
+    //rDelegate = new RDel(this);
+    //ui->vrangeTableView->setItemDelegate(rDelegate);
 }
 
 MainWindow::~MainWindow()

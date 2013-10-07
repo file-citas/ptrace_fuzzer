@@ -5,7 +5,8 @@
 Tag::Tag(addr_t loc, int len) :
 	loc_(loc), len_(len)
 {
-    init_val_ = new Val(loc_, len_);
+	init_val_ = new Val(loc_, len_);
+	type_ = guessType();
 	fprintf(stderr, "Created Tag at %lx (+%d)\n", loc_, len_);
 }
 
@@ -14,13 +15,14 @@ Tag::Tag(Access* a)
 	addAccess(a);
 	loc_ = a->loc();
 	len_ = a->len();
-    init_val_ = new Val(loc_, len_);
+	type_ = guessType();
+	init_val_ = new Val(loc_, len_);
 	fprintf(stderr, "Created Tag at %lx (+%d)\n", loc_, len_);
 }
 
 Tag::~Tag()
 {
-    delete init_val_;
+	delete init_val_;
 	std::vector<Access*>::iterator it = access_.begin();
 	for( ; it!=access_.end(); ++it)
 		delete *it;
@@ -71,7 +73,7 @@ int Tag::addTraceF(addr_t rip, Tag* t, TTYPE type)
 	Trace* tr = new Trace(t, type);
 	std::pair<std::map<addr_t, Trace*>::iterator, bool> ret =
 		tforw_.insert(std::pair<addr_t, Trace*>(
-				rip, tr));
+					rip, tr));
 	if(!ret.second) {
 		delete tr;
 		return 0;
@@ -83,10 +85,28 @@ int Tag::addTraceB(addr_t rip, Tag* t, TTYPE type)
 	Trace* tr = new Trace(t, type);
 	std::pair<std::map<addr_t, Trace*>::iterator, bool> ret =
 		tbackw_.insert(std::pair<addr_t, Trace*>(
-				rip, tr));
+					rip, tr));
 	if(!ret.second) {
 		delete tr;
 		return 0;
 	}
 	return 1;
 }
+
+TAGTYPE Tag::guessType() // TODO: make better ...
+{
+	size_t n = sizeof(_OffsetType);
+	char* val = new char[n];
+	T::arget().read(loc_, val, 1);
+	if(T::arget().inStack((_OffsetType)*val)) { // TODO: change criteria
+		return TT_PTR;
+	} else {
+		for(size_t i=0; i<n; ++i) {
+			if(val[i] < 32 && val[i] != 0) {// non displayable character
+				return TT_NUM;
+			}
+		}
+		return TT_STR;
+	}
+}
+

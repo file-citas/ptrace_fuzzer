@@ -7,6 +7,7 @@
 #include "tabmodel.h"
 #include "codemodel.h"
 #include "vrangemodel.h"
+#include "rdel.h"
 
 namespace Ui {
 class MainWindow;
@@ -29,6 +30,7 @@ private:
     tabmodel* tagview;
     Codemodel* codeview;
     vrangemodel* vrangeview;
+    RDel* rDelegate;
 };
 
 #endif // MAINWINDOW_H

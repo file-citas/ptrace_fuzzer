@@ -1,5 +1,6 @@
 #include "val.h"
 #include "target.h"
+#include <assert.h>
 
 Val::Val(addr_t loc, int len) :
 	len_(len)
@@ -20,7 +21,7 @@ Val::Val(const Val& val) :
 	len_(val.len_)
 {
 	val_ = new unsigned char[len_];
-	for(int i=0; i<len_; ++i)
+    for(int i=0; i<len_; ++i)
 		val_[i] = val.val_[i];
 	mkStr();
 }
@@ -46,4 +47,22 @@ Val& Val::operator++()
 	long long* x = (long long*) val_;
 	*x+=0x1;
 	return *this;
+}
+
+bool Val::cmp(const Val &val) const
+{
+    for(int i=0; i<len_ && i<val.len(); ++i)
+        if(val_[i]!=val.val()[i])
+            return false;
+    return true;
+}
+
+void Val::val(unsigned char* newVal, int newLen)
+{
+    assert(newLen<=len_);
+    for(int i=0; i<newLen; ++i) {
+        //fprintf(stderr, "%2x->%2x\n", val_[i], newVal[i]);
+        val_[i] = newVal[i];
+    }
+    //fprintf(stderr, "New Value set (%2x ...)\n", val_[0]);
 }

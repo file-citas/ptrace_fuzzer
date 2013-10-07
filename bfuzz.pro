@@ -29,7 +29,8 @@ SOURCES += main.cpp\
     fuzzer.cpp \
     state.cpp \
     vrange.cpp \
-    vrangemodel.cpp
+    vrangemodel.cpp \
+    rdel.cpp
 
 HEADERS  += mainwindow.h \
     val.h \
@@ -51,6 +52,7 @@ HEADERS  += mainwindow.h \
     fuzzer.h \
     state.h \
     vrange.h \
-    vrangemodel.h
+    vrangemodel.h \
+    rdel.h
 
 FORMS    += mainwindow.ui

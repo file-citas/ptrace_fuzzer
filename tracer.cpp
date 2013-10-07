@@ -11,9 +11,13 @@
 #include <sys/user.h>
 #include <sys/mman.h>
 #include <math.h>
+#include <limits>
 
 Tracer::Tracer(int argc, char** argv) :
-	heap_min_(0), heap_max_(0), stack_min_(0), stack_max_(0)
+    heap_min_(std::numeric_limits<addr_t>::max()),
+    heap_max_(0),
+    stack_min_(std::numeric_limits<addr_t>::max()),
+    stack_max_(0)
 {
 	// prep target
 	T::arget().init(argv);

@@ -26,10 +26,15 @@ void Fuzzer::fuzz(addr_t from, addr_t to, const std::vector<const VRange*>& vran
 	State state(regs, Memstate(tracer_->heap_min(), tracer_->heap_max()), 
 			Memstate(tracer_->stack_min(), tracer_->stack_max()));
 
+
+    fprintf(stderr, "Starting Fuzz from %lx to %lx\n", from, to);
+
 	// iterate over all values for all tags
 	for( auto value : vrange ) {
-		state.restore();
-		value->setNext();
+        while (value->setNext()) {
+        state.restore();
+        fprintf(stderr, "Starting target ... \n");
 		T::arget().runTo(to);
-	}
+        }
+    }
 }

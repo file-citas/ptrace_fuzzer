@@ -329,15 +329,20 @@ const _CodeInfo* T::getCi() const
 
 void T::reset()
 {
+    fprintf(stderr, "Resetting Target\n");
 	initial_state_->restore();
 }
 
 void T::runTo(addr_t rip)
 {
+    fprintf(stderr, "Run to %lx\n", rip);
 	assert(inCode(rip));
 	bp_->set(rip);
 	safe_ptrace(PTRACE_CONT, 0, NULL);
 	int status;
 	waitpid(pid_, &status, 0);
 	bp_->unset(rip);
+    struct user_regs_struct regs;
+    safe_ptrace(PTRACE_GETREGS, 0, &regs);
+    fprintf(stderr, "ok (RIP: %lx)\n", regs.rip);
 }
