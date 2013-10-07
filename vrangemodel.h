@@ -15,13 +15,13 @@ public:
     const VRange* vrange() const { return vrange_;}
     addr_t addrFrom() const { return addrFrom_;}
     addr_t addrTo() const { return addrTo_;}
-    const Val& valFrom() const { return valFrom_; }
-    const Val& valTo() const { return valTo_; }
+    Val* valFrom() { return &valFrom_; }
+    Val* valTo() { return &valTo_; }
 private:
     const VRange* vrange_;
     const Tag* tag_;
-    const Val valFrom_;
-    const Val valTo_;
+    Val valFrom_;
+    Val valTo_;
     addr_t addrFrom_;
     addr_t addrTo_;
 };
@@ -34,6 +34,8 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const ;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+    bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
+    Qt::ItemFlags flags(const QModelIndex & index) const ;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
     void getVrange(std::vector<const VRange*>&) const;
@@ -41,12 +43,13 @@ public:
 protected:
 
 signals:
+    //void editCompleted(const QString &);
 
 public slots:
     void addVRange_slot(const Tag* tag, const Val& from, const Val& to);
 
 private:
-    QList<vrangeitem> items_;
+    QList<vrangeitem*> items_;
 };
 
 

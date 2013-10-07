@@ -9,6 +9,7 @@
 #include <map>
 #include <tr1/functional>
 
+enum TAGTYPE{TT_NUM, TT_STR, TT_PTR, TT_UNKNOWN};
 class Tag
 {
 	public:
@@ -16,24 +17,26 @@ class Tag
 		Tag(Access* a);
 		~Tag();
 
-        const Access* lastAccess() const;
-        const std::map<addr_t, Access*>& rip_access() const
-        {return rip_access_;}
-        const Val* init_val() const {return init_val_;}
+		const Access* lastAccess() const;
+		const std::map<addr_t, Access*>& rip_access() const
+		{return rip_access_;}
+		const Val* init_val() const {return init_val_;}
 		addr_t loc() const;
 		int len() const;
+		TAGTYPE type() const { return type_;} // getter returns assumed tagtype
 
 		// log access
 		int log(addr_t rip, addr_t loc);
 
-        int addTraceF(addr_t rip, Tag* t, TTYPE type);
-        int addTraceB(addr_t rip, Tag* t, TTYPE type);
+		int addTraceF(addr_t rip, Tag* t, TTYPE type);
+		int addTraceB(addr_t rip, Tag* t, TTYPE type);
 
-        const std::map<addr_t, Trace*>& tforw() const {
-            return tforw_;
-        }
+		const std::map<addr_t, Trace*>& tforw() const {
+			return tforw_;
+		}
 
 	private:
+		TAGTYPE guessType(); // guess what type the tagged memory is
 		int addAccess(Access* a);
 		std::vector<Access*> access_;
 		std::map<addr_t, Access*> rip_access_;
@@ -43,7 +46,8 @@ class Tag
 
 		addr_t loc_;
 		int len_;
-        Val* init_val_;
+		Val* init_val_;
+		TAGTYPE type_;
 };
 
 namespace std { namespace tr1 {

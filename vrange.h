@@ -10,14 +10,14 @@ class VRange
 		VRange(const Tag* t, const Val& start_val, const Val& stop_val);
 		~VRange();
 
-        const Val& next() const;
-        void setNext() const;
+		//const Val& next() const;
+		bool setNext() const;
 
 	private:
 		const Tag* tag_;
 		const Val start_;
 		const Val stop_;
-        mutable Val current_;
+		mutable Val current_;
 };
 
 #endif
