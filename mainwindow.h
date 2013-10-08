@@ -30,7 +30,7 @@ private:
     TagModel* tagmodel;
     CodeModel* codemodel;
     VRangeModel* vrangemodel;
-    //RDel* rDelegate;
+    RDel* rDelegate;
 };
 
 #endif // MAINWINDOW_H

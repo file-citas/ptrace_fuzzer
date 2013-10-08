@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <QDebug>
 
-CodeModel::CodeModel(const std::map<addr_t, _DInst*>& code, const _CodeInfo* ci, QObject *parent) :
+CodeModel::CodeModel(
+        const std::map<addr_t, _DInst*>& code,
+        const _CodeInfo* ci, QObject *parent) :
     QAbstractTableModel(parent),
     codeToRip_(code), ci_(ci)
 {
@@ -28,7 +30,7 @@ int CodeModel::rowCount(const QModelIndex &parent) const
 int CodeModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    return 1;
+    return 2;
 }
 
 QVariant CodeModel::data(const QModelIndex &index, int role) const
@@ -38,7 +40,9 @@ QVariant CodeModel::data(const QModelIndex &index, int role) const
     switch(role) {
     case Qt::DisplayRole:
     {
-        if(col==0) {
+        if(col==1) {
+            return QString("%1").arg(code_[row]->addr,6,16, QChar('0'));
+        }else if(col==0) {
             return strCode_[row];
         }
         break;
@@ -62,6 +66,8 @@ QVariant CodeModel::headerData(int section, Qt::Orientation orientation, int rol
             {
             case 0:
                 return QString("Code");
+            case 1:
+                return QString("v address");
             }
         }
     }
@@ -82,6 +88,7 @@ void CodeModel::selectionChangedSlot(const QItemSelection &newSelection,
 
 addr_t CodeModel::getSelRipFrom()  const
 {
+    if(currentSelection.empty()) return 0;
     int start_row = currentSelection.indexes().first().row();
     return code_[start_row]->addr;
 }
@@ -89,6 +96,7 @@ addr_t CodeModel::getSelRipFrom()  const
 
 addr_t CodeModel::getSelRipTo()  const
 {
+    if(currentSelection.empty()) return 0;
     int stop_row = currentSelection.indexes().last().row();
     return code_[stop_row]->addr;
 }

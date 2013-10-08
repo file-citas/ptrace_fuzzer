@@ -30,6 +30,7 @@ MainWindow::MainWindow(Fuzzer* t, QWidget *parent) :
     ui->codetableview->setModel(codemodel);
     ui->codetableview->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
     ui->codetableview->verticalHeader()->hide();
+    ui->codetableview->setSelectionBehavior(QAbstractItemView::SelectRows);
     connect(ui->codetableview->selectionModel(),
             SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
             codemodel,
@@ -50,8 +51,12 @@ MainWindow::MainWindow(Fuzzer* t, QWidget *parent) :
             vrangemodel,
             SLOT(addVRange_slot(Tag*,Val*,Val*)));
 
-    //rDelegate = new RDel(this);
-    //ui->vrangeTableView->setItemDelegate(rDelegate);
+    rDelegate = new RDel(this);
+    ui->vrangeTableView->setItemDelegateForColumn(3,rDelegate);
+
+    // textbrowser ...
+    //ui->textBrowser->setText("Select Code Section and Variables to start Fuzzing ...");
+    //ui->pushButton->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -67,9 +72,17 @@ void MainWindow::startFuzz()
     // get selected code section
     addr_t from = codemodel->getSelRipFrom();
     addr_t to = codemodel->getSelRipTo();
+    if(to==0 || from==0) {
+        ui->textBrowser->setText("ERROR: Select Code Section.\n");
+        return;
+    }
     // get selected variables and accoring value ranges
     std::vector<const VRange*> vrange;
     vrangemodel->getVrange(vrange);
+    if(vrange.empty()) {
+        ui->textBrowser->setText("ERROR: Select Variables.\n");
+        return;
+    }
     // start fuzzing
     fuzzer->fuzz(from, to, vrange);
 }
