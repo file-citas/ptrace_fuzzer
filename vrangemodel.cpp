@@ -85,6 +85,27 @@ bool VRangeModel::setData(const QModelIndex & index, const QVariant & value, int
                         ba.length());
             emit dataChanged(createIndex(row, col, 0),
                              createIndex(row, col, 0));
+        } else if (col==3) { // TODO
+            if(qstrcmp(value.toString().toAscii().constData(), "SKIP")==0 &&
+                    item->vrange()->inc()->type()!=SKIP) {
+                item->vrange()->setInc(new IncSkip(
+                                           item->valTo()->val(),
+                                           item->valTo()->len()
+                                           ));
+            } else if (qstrcmp(value.toString().toAscii().constData(), "INC VAL")==0 &&
+                       item->vrange()->inc()->type()!=IVAL) {
+                unsigned char step = 1;
+                item->vrange()->setInc(new IncNum(
+                                           &step, 1));
+
+            } else if (qstrcmp(value.toString().toAscii().constData(), "INC LEN")==0 &&
+                       item->vrange()->inc()->type()!=ILEN) {
+                unsigned char step = 1;
+                item->vrange()->setInc(new IncStrLen(&step, 1));
+
+            }
+            emit dataChanged(createIndex(row, col, 0),
+                             createIndex(row, col, 0));
         }
     }
     return true;

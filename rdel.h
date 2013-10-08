@@ -5,7 +5,7 @@
 #include <QModelIndex>
 #include <QObject>
 #include <QSize>
-#include <QSpinBox>
+#include <QComboBox>
 
 class RDel : public QItemDelegate
 {

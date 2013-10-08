@@ -119,6 +119,7 @@ void TagModel::selectionChangedSlot(const QItemSelection &newSelection,
     std::map<int,tagitem*, greater>::const_iterator it =
             indexToTagitem_.lower_bound(row);
     if(it==indexToTagitem_.end()) return;
+    it->second->highlight();
     const Tag* tag = it->second->tag();
     for(auto trace : tag->tforw()) {
         tagitem* item = tagToTagitem_.find(trace.second->tag)->second;

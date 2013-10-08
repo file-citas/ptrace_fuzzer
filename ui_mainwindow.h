@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Tue Oct 8 16:20:21 2013
+** Created: Tue Oct 8 16:38:59 2013
 **      by: Qt User Interface Compiler version 4.8.3
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -32,10 +32,11 @@ class Ui_MainWindow
 {
 public:
     QWidget *centralWidget;
-    QVBoxLayout *verticalLayout;
+    QHBoxLayout *horizontalLayout_2;
     QHBoxLayout *horizontalLayout;
     QTableView *tagtableview;
     QTableView *codetableview;
+    QVBoxLayout *verticalLayout;
     QTableView *vrangeTableView;
     QTextBrowser *textBrowser;
     QPushButton *pushButton;
@@ -50,10 +51,10 @@ public:
         MainWindow->resize(433, 369);
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
-        verticalLayout = new QVBoxLayout(centralWidget);
-        verticalLayout->setSpacing(6);
-        verticalLayout->setContentsMargins(11, 11, 11, 11);
-        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
+        horizontalLayout_2 = new QHBoxLayout(centralWidget);
+        horizontalLayout_2->setSpacing(6);
+        horizontalLayout_2->setContentsMargins(11, 11, 11, 11);
+        horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setSpacing(6);
         horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
@@ -68,8 +69,11 @@ public:
         horizontalLayout->addWidget(codetableview);
 
 
-        verticalLayout->addLayout(horizontalLayout);
+        horizontalLayout_2->addLayout(horizontalLayout);
 
+        verticalLayout = new QVBoxLayout();
+        verticalLayout->setSpacing(6);
+        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         vrangeTableView = new QTableView(centralWidget);
         vrangeTableView->setObjectName(QString::fromUtf8("vrangeTableView"));
 
@@ -84,6 +88,9 @@ public:
         pushButton->setObjectName(QString::fromUtf8("pushButton"));
 
         verticalLayout->addWidget(pushButton);
+
+
+        horizontalLayout_2->addLayout(verticalLayout);
 
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);

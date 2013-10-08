@@ -39,7 +39,6 @@ void Fuzzer::fuzz(addr_t from, addr_t to, const std::vector<const VRange*>& vran
             value->set();
 			fprintf(stderr, "Starting target with %s... \n", value->str());
 			T::arget().runTo(to);
-            getchar();
             state.restore();
         }while (value->next());
 	}
