@@ -6,16 +6,19 @@
 
 // TODO: init with start value?
 
+enum ITYPE{SKIP, IVAL, ILEN};
 class Inc
 {
 	public:
-		Inc(unsigned char* incStep, int len);
+        Inc(unsigned char* incStep, int len, ITYPE itype);
 		virtual ~Inc();
 		virtual addr_t inc(Val* v, unsigned char maxByte = 0) = 0;
+        ITYPE type() const {return itype_;}
 	protected:
 		unsigned char* incStep_;
 		int len_;
 		unsigned char maxChar_;
+        ITYPE itype_;
 
 };
 
@@ -51,6 +54,18 @@ class IncStrLen : public Inc
 		virtual addr_t inc(Val* val, unsigned char maxByte = 0);
 	private:
 		// TODO
+
+};
+
+
+class IncSkip : public Inc
+{
+    public:
+        IncSkip(unsigned char* incStep, int len);
+        virtual ~IncSkip();
+        virtual addr_t inc(Val* val, unsigned char maxByte = 0);
+    private:
+        // TODO
 
 };
 

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Tue Oct 8 14:04:26 2013
+** Created: Tue Oct 8 16:20:21 2013
 **      by: Qt User Interface Compiler version 4.8.3
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -21,6 +21,7 @@
 #include <QtGui/QPushButton>
 #include <QtGui/QStatusBar>
 #include <QtGui/QTableView>
+#include <QtGui/QTextBrowser>
 #include <QtGui/QToolBar>
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QWidget>
@@ -36,6 +37,7 @@ public:
     QTableView *tagtableview;
     QTableView *codetableview;
     QTableView *vrangeTableView;
+    QTextBrowser *textBrowser;
     QPushButton *pushButton;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
@@ -72,6 +74,11 @@ public:
         vrangeTableView->setObjectName(QString::fromUtf8("vrangeTableView"));
 
         verticalLayout->addWidget(vrangeTableView);
+
+        textBrowser = new QTextBrowser(centralWidget);
+        textBrowser->setObjectName(QString::fromUtf8("textBrowser"));
+
+        verticalLayout->addWidget(textBrowser);
 
         pushButton = new QPushButton(centralWidget);
         pushButton->setObjectName(QString::fromUtf8("pushButton"));

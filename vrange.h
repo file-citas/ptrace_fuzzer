@@ -11,8 +11,10 @@ class VRange
         VRange(Tag* t, Val *start_val, Val *stop_val);
 		~VRange();
 
-		bool setNext() const;
+        bool next() const;
+        void set() const;
 		void setInc(Inc* inc);
+        const Inc* inc() {return inc_;}
 		const char* str() const {
             return current_->str();
 		}

@@ -3,6 +3,7 @@
 
 #include <QAbstractTableModel>
 #include <QList>
+#include <QSet>
 #include <vector>
 #include "tag.h"
 #include "val.h"
@@ -12,14 +13,14 @@ class vrangeitem {
 public:
     vrangeitem(Tag *tag, Val *from, Val *to);
     // TODO destructor
-    const VRange* vrange() const { return vrange_;}
+    VRange* vrange() { return vrange_;}
     addr_t addrFrom() const { return addrFrom_;}
     addr_t addrTo() const { return addrTo_;}
     Val* valFrom() { return valFrom_; }
     Val* valTo() { return valTo_; }
     Tag* tag() { return tag_;}
 private:
-    const VRange* vrange_;
+    VRange* vrange_;
     Tag* tag_;
     Val* valFrom_;
     Val* valTo_;
@@ -51,6 +52,8 @@ public slots:
 
 private:
     QList<vrangeitem*> items_;
+    QSet<Tag*> tags_;
+    QList<QString> incNames_;
 };
 
 
