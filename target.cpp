@@ -171,6 +171,7 @@ int T::init(char** argv)
 		for(size_t i=0; i<cjmp.size(); ++i)
 			bp_->set(cjmp[i]);
 		ci_ = ci;
+		used_ = 0;
 
 	}
 	return 0;
@@ -216,9 +217,7 @@ int T::singlestep()
 
 int T::write(addr_t addr, void *vptr, size_t len) const
 {
-	if(!init_) {NoInit exp; throw(exp);}
-	//assert(len>sizeof(long));
-
+    if(!init_) {NoInit exp; throw(exp);}
 	size_t i, j;
 	long new_word;
 	long orig_word;
@@ -335,14 +334,22 @@ void T::reset()
 
 void T::runTo(addr_t rip)
 {
-    fprintf(stderr, "Run to %lx\n", rip);
+    struct user_regs_struct regs;
+    T::arget().safe_ptrace(PTRACE_GETREGS, 0, &regs);
+    fprintf(stderr, "Run from %lx to %lx\n", regs.rip, rip);
 	assert(inCode(rip));
 	bp_->set(rip);
 	safe_ptrace(PTRACE_CONT, 0, NULL);
 	int status;
 	waitpid(pid_, &status, 0);
-	bp_->unset(rip);
-    struct user_regs_struct regs;
+    bp_->unset(rip);
     safe_ptrace(PTRACE_GETREGS, 0, &regs);
     fprintf(stderr, "ok (RIP: %lx)\n", regs.rip);
+}
+
+addr_t T::findSpace(int len)
+{
+	used_+=len; 
+	// TODO
+	return stack_start_ + 0x1024 + used_;
 }

@@ -22,7 +22,9 @@ class Tag
 		{return rip_access_;}
 		const Val* init_val() const {return init_val_;}
 		addr_t loc() const;
+		void loc(addr_t newLoc); 
 		int len() const;
+		void len(int newLen);
 		TAGTYPE type() const { return type_;} // getter returns assumed tagtype
 
 		// log access
@@ -34,6 +36,9 @@ class Tag
 		const std::map<addr_t, Trace*>& tforw() const {
 			return tforw_;
 		}
+        const std::map<addr_t, Trace*>& tbackw() const {
+            return tbackw_;
+        }
 
 	private:
 		TAGTYPE guessType(); // guess what type the tagged memory is

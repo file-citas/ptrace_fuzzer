@@ -12,17 +12,16 @@ class Val
 		~Val();
 
 		int len() const {return len_;}
+		void len(int newLen);
 		const unsigned char* val() const {return val_;}
-        void val(unsigned char* newVal, int newLen);
+		unsigned char* val() {return val_;}
+		void val(unsigned char* newVal, int newLen);
 
-        bool cmp(const Val& val) const;
+		bool cmp(const Val& val) const;
 		const char* str() const {return str_;}
-
-		// prefix inc
-		Val& operator++();
-	
-	private:
 		int mkStr();
+
+	private:
 		unsigned char* val_;
 		int len_;
 		char* str_;

@@ -10,11 +10,11 @@
 #include "types.h"
 #include "distorm.h"
 
-class Codemodel : public QAbstractTableModel
+class CodeModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    Codemodel(const std::map<addr_t, _DInst*>& code,  const _CodeInfo* ci , QObject *parent = 0);
+    CodeModel(const std::map<addr_t, _DInst*>& code,  const _CodeInfo* ci , QObject *parent = 0);
     int rowCount(const QModelIndex &parent = QModelIndex()) const ;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;

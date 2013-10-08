@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <QDebug>
 
-Codemodel::Codemodel(const std::map<addr_t, _DInst*>& code, const _CodeInfo* ci, QObject *parent) :
+CodeModel::CodeModel(const std::map<addr_t, _DInst*>& code, const _CodeInfo* ci, QObject *parent) :
     QAbstractTableModel(parent),
     codeToRip_(code), ci_(ci)
 {
@@ -19,19 +19,19 @@ Codemodel::Codemodel(const std::map<addr_t, _DInst*>& code, const _CodeInfo* ci,
     }
 }
 
-int Codemodel::rowCount(const QModelIndex &parent) const
+int CodeModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
     return size_;
 }
 
-int Codemodel::columnCount(const QModelIndex &parent) const
+int CodeModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
     return 1;
 }
 
-QVariant Codemodel::data(const QModelIndex &index, int role) const
+QVariant CodeModel::data(const QModelIndex &index, int role) const
 {
     int row = index.row();
     int col = index.column();
@@ -53,7 +53,7 @@ QVariant Codemodel::data(const QModelIndex &index, int role) const
 }
 
 
-QVariant Codemodel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant CodeModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (role == Qt::DisplayRole)
     {
@@ -69,7 +69,7 @@ QVariant Codemodel::headerData(int section, Qt::Orientation orientation, int rol
 }
 
 
-void Codemodel::selectionChangedSlot(const QItemSelection &newSelection,
+void CodeModel::selectionChangedSlot(const QItemSelection &newSelection,
                                      const QItemSelection &oldSelection)
 {
     currentSelection.merge(oldSelection, QItemSelectionModel::Deselect);
@@ -80,14 +80,14 @@ void Codemodel::selectionChangedSlot(const QItemSelection &newSelection,
     emit selectionChanged(code_[start_row]->addr, code_[stop_row]->addr);
 }
 
-addr_t Codemodel::getSelRipFrom()  const
+addr_t CodeModel::getSelRipFrom()  const
 {
     int start_row = currentSelection.indexes().first().row();
     return code_[start_row]->addr;
 }
 
 
-addr_t Codemodel::getSelRipTo()  const
+addr_t CodeModel::getSelRipTo()  const
 {
     int stop_row = currentSelection.indexes().last().row();
     return code_[stop_row]->addr;

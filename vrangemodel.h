@@ -10,27 +10,28 @@
 
 class vrangeitem {
 public:
-    vrangeitem(const Tag *tag, const Val &from, const Val &to);
+    vrangeitem(Tag *tag, Val *from, Val *to);
     // TODO destructor
     const VRange* vrange() const { return vrange_;}
     addr_t addrFrom() const { return addrFrom_;}
     addr_t addrTo() const { return addrTo_;}
-    Val* valFrom() { return &valFrom_; }
-    Val* valTo() { return &valTo_; }
+    Val* valFrom() { return valFrom_; }
+    Val* valTo() { return valTo_; }
+    Tag* tag() { return tag_;}
 private:
     const VRange* vrange_;
-    const Tag* tag_;
-    Val valFrom_;
-    Val valTo_;
+    Tag* tag_;
+    Val* valFrom_;
+    Val* valTo_;
     addr_t addrFrom_;
     addr_t addrTo_;
 };
 
-class vrangemodel : public QAbstractTableModel
+class VRangeModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    explicit vrangemodel(QObject *parent = 0);
+    explicit VRangeModel(QObject *parent = 0);
     int rowCount(const QModelIndex &parent = QModelIndex()) const ;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
@@ -46,7 +47,7 @@ signals:
     //void editCompleted(const QString &);
 
 public slots:
-    void addVRange_slot(const Tag* tag, const Val& from, const Val& to);
+    void addVRange_slot(Tag* tag, Val *from, Val *to);
 
 private:
     QList<vrangeitem*> items_;

@@ -27,10 +27,10 @@ private slots:
 private:
     Ui::MainWindow *ui;
     Fuzzer* fuzzer;
-    tabmodel* tagview;
-    Codemodel* codeview;
-    vrangemodel* vrangeview;
-    RDel* rDelegate;
+    TagModel* tagmodel;
+    CodeModel* codemodel;
+    VRangeModel* vrangemodel;
+    //RDel* rDelegate;
 };
 
 #endif // MAINWINDOW_H
