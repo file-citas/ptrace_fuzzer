@@ -5,10 +5,10 @@
 #include <QMenu>
 
 std::map<Tag*, std::vector<int> > tag_idx;
-tabmodel::tabmodel(const std::set<Tag*>& t, QObject *parent) :
+TagModel::TagModel(const std::set<Tag*>& t, QObject *parent) :
     QAbstractTableModel(parent)
 {
-    size = 0;
+    size_ = 0;
     double nTags = t.size();
     double hstep = 359/nTags;
     double hue = 0;
@@ -17,38 +17,38 @@ tabmodel::tabmodel(const std::set<Tag*>& t, QObject *parent) :
         it!=t.end(); ++it) {
         QModelIndexList indices;
         for(int i=0; i<(*it)->len(); ++i)
-            indices << createIndex(size+i,0,0);
+            indices << createIndex(size_+i,0,0);
 
         tagitem* item = new tagitem(*it, hue, indices);
-        ti.insert(std::pair<int, tagitem*>(size, item));
-        tti.insert(std::pair<Tag*, tagitem*>(
+        indexToTagitem_.insert(std::pair<int, tagitem*>(size_, item));
+        tagToTagitem_.insert(std::pair<Tag*, tagitem*>(
                        (*it), item));
         hue += hstep;
-        size += (*it)->len();
+        size_ += (*it)->len();
     }
 
     setVRange = new QAction(tr("Set Value Range"), this);
 }
 
-int tabmodel::rowCount(const QModelIndex &parent) const
+int TagModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    return size;
+    return size_;
 }
 
-int tabmodel::columnCount(const QModelIndex &parent) const
+int TagModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
     return 3;
 }
 
-QVariant tabmodel::data(const QModelIndex &index, int role) const
+QVariant TagModel::data(const QModelIndex &index, int role) const
 {
     int row = index.row();
     int col = index.column();
     std::map<int,tagitem*, greater>::const_iterator it =
-            ti.lower_bound(row);
-    if(it==ti.end()) return QVariant();
+            indexToTagitem_.lower_bound(row);
+    if(it==indexToTagitem_.end()) return QVariant();
     switch(role) {
     case Qt::DisplayRole:
     {
@@ -81,7 +81,7 @@ QVariant tabmodel::data(const QModelIndex &index, int role) const
 }
 
 
-QVariant tabmodel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant TagModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (role == Qt::DisplayRole)
     {
@@ -100,46 +100,50 @@ QVariant tabmodel::headerData(int section, Qt::Orientation orientation, int role
     return QVariant();
 }
 
-void tabmodel::selectionChangedSlot(const QItemSelection &newSelection,
+void TagModel::selectionChangedSlot(const QItemSelection &newSelection,
                                     const QItemSelection &oldSelection)
 {
-    currentSelection.merge(oldSelection, QItemSelectionModel::Deselect);
-    currentSelection.merge(newSelection, QItemSelectionModel::Select);
+    currentSelection_.merge(oldSelection, QItemSelectionModel::Deselect);
+    currentSelection_.merge(newSelection, QItemSelectionModel::Select);
 
-    std::map<int,tagitem*, greater>::const_iterator kt = ti.begin();
-    for( ; kt!=ti.end(); ++kt)
+    std::map<int,tagitem*, greater>::const_iterator kt = indexToTagitem_.begin();
+    for( ; kt!=indexToTagitem_.end(); ++kt)
         kt->second->lowlight();
     emit dataChanged(createIndex(0, 0, 0),
                      createIndex(rowCount(), columnCount(), 0));
 
-    if(currentSelection.indexes().isEmpty()) return;
+    if(currentSelection_.indexes().isEmpty()) return;
 
-    QModelIndex index = currentSelection.indexes()[0];
+    QModelIndex index = currentSelection_.indexes()[0];
     int row = index.row();
     std::map<int,tagitem*, greater>::const_iterator it =
-            ti.lower_bound(row);
-    if(it==ti.end()) return;
+            indexToTagitem_.lower_bound(row);
+    if(it==indexToTagitem_.end()) return;
     const Tag* tag = it->second->tag();
-    std::map<addr_t, Trace*> tf = tag->tforw();
-    std::map<addr_t, Trace*>::const_iterator jt = tf.begin();
-    for( ; jt!=tf.end(); ++jt) {
-        tagitem* item = tti.find(jt->second->tag)->second;
+    for(auto trace : tag->tforw()) {
+        tagitem* item = tagToTagitem_.find(trace.second->tag)->second;
+        item->highlight();
+        emit dataChanged(createIndex(item->indices().first().row(), 0, 0),
+                         createIndex(item->indices().last().row(), columnCount(), 0));
+    }
+    for(auto trace : tag->tbackw()) {
+        tagitem* item = tagToTagitem_.find(trace.second->tag)->second;
         item->highlight();
         emit dataChanged(createIndex(item->indices().first().row(), 0, 0),
                          createIndex(item->indices().last().row(), columnCount(), 0));
     }
 }
 
-void tabmodel::CodeSelectionChangedSlot(const addr_t& start, const addr_t& stop)
+void TagModel::CodeSelectionChangedSlot(const addr_t& start, const addr_t& stop)
 {
-    std::map<int,tagitem*, greater>::const_iterator kt = ti.begin();
-    for( ; kt!=ti.end(); ++kt)
+    std::map<int,tagitem*, greater>::const_iterator kt = indexToTagitem_.begin();
+    for( ; kt!=indexToTagitem_.end(); ++kt)
         kt->second->lowlight();
     emit dataChanged(createIndex(0, 0, 0),
                      createIndex(rowCount(), columnCount(), 0));
 
     for(addr_t addr=start; addr<=stop; ++addr) {
-        for( auto tagToItem : tti) {
+        for( auto tagToItem : tagToTagitem_) {
             const Tag* tag = tagToItem.first;
             tagitem* tagi = tagToItem.second;
             if(tag->rip_access().find(addr) != tag->rip_access().end()) {
@@ -149,30 +153,18 @@ void tabmodel::CodeSelectionChangedSlot(const addr_t& start, const addr_t& stop)
     }
 
 }
-
-void tabmodel::on_actionRightClick_triggered(const QPoint& p)
+void TagModel::doubleClicked_slot(QModelIndex index)
 {
-    QMenu menu;
-    menu.addAction(setVRange);
-    menu.exec(QCursor::pos());
-}
-
-void tabmodel::on_setVRange_triggered()
-{
-    //if(!setVRange->isChecked()) return;
-    if(currentSelection.indexes().isEmpty()) return;
-
-    QModelIndex index = currentSelection.indexes()[0];
-    int row = index.row();
-    std::map<int,tagitem*, greater>::const_iterator it =
-            ti.lower_bound(row);
-    if(it==ti.end()) return;
-    const Tag* tag = it->second->tag();
-    unsigned char* val = new unsigned char[tag->len()];
-    memset(val, 0, tag->len());
-    emit addVRange_signal(tag,
-                          Val(tag->loc(), tag->len()),
-                          Val(tag->loc(), tag->len()));
+     int row = index.row();
+     std::map<int,tagitem*, greater>::const_iterator it =
+             indexToTagitem_.lower_bound(row);
+     if(it==indexToTagitem_.end()) return;
+     Tag* tag = it->second->tag();
+     unsigned char* val = new unsigned char[tag->len()];
+     memset(val, 0, tag->len());
+     emit addVRange_signal(tag,
+                           new Val(tag->loc(), tag->len()),
+                           new Val(tag->loc(), tag->len()));
 
 }
 

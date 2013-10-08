@@ -110,3 +110,17 @@ TAGTYPE Tag::guessType() // TODO: make better ...
 	}
 }
 
+
+void Tag::loc(addr_t newLoc)
+{
+	loc_ = newLoc;
+	for(auto back : tbackw_) {
+		if(back.second->ttype==PTR)
+			T::arget().write(back.second->tag->loc(), &newLoc, sizeof(addr_t));
+	}
+}
+ void Tag::len(int newLen)
+{
+	len_ = newLen;
+	loc(T::arget().findSpace(len_));
+}

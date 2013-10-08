@@ -2,6 +2,8 @@
 #include "state.h"
 #include "target.h"
 
+#include <algorithm>    // std::swap
+
 Fuzzer::Fuzzer(int argc, char** argv)
 {
 	tracer_ = new Tracer(argc, argv);
@@ -16,6 +18,7 @@ Fuzzer::~Fuzzer()
 
 void Fuzzer::fuzz(addr_t from, addr_t to, const std::vector<const VRange*>& vrange)
 {
+    if(from>to) std::swap(from, to);
 	// reset target
 	T::arget().reset();
 	// run to start event
@@ -27,14 +30,16 @@ void Fuzzer::fuzz(addr_t from, addr_t to, const std::vector<const VRange*>& vran
 			Memstate(tracer_->stack_min(), tracer_->stack_max()));
 
 
-    fprintf(stderr, "Starting Fuzz from %lx to %lx\n", from, to);
+	fprintf(stderr, "Starting Fuzz from %lx to %lx\n", from, to);
 
-	// iterate over all values for all tags
+    // iterate over all values for all tags
+    state.restore();
 	for( auto value : vrange ) {
         while (value->setNext()) {
-        state.restore();
-        fprintf(stderr, "Starting target ... \n");
-		T::arget().runTo(to);
-        }
-    }
+			fprintf(stderr, "Starting target with %s... \n", value->str());
+			T::arget().runTo(to);
+			getchar();
+            state.restore();
+		}
+	}
 }

@@ -65,6 +65,9 @@ class T
 		// run programm unitl rip is reached
 		void runTo(addr_t rip);
 
+		// find len bytes of free memory 
+		addr_t findSpace(int len);
+
 	private:
 		T() : init_(false), pid_(0) {};
 		T(T const&);
@@ -95,6 +98,7 @@ class T
 		_CodeInfo ci_;
 		std::map<addr_t, _DInst*> rip_i_;
 		State* initial_state_;
+		addr_t used_;
 };
 
 #endif

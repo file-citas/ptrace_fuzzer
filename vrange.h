@@ -3,21 +3,26 @@
 
 #include "tag.h"
 #include "val.h"
+#include "inc.h"
 
 class VRange
 {
 	public:
-		VRange(const Tag* t, const Val& start_val, const Val& stop_val);
+        VRange(Tag* t, Val *start_val, Val *stop_val);
 		~VRange();
 
-		//const Val& next() const;
 		bool setNext() const;
+		void setInc(Inc* inc);
+		const char* str() const {
+            return current_->str();
+		}
 
 	private:
-		const Tag* tag_;
-		const Val start_;
-		const Val stop_;
-		mutable Val current_;
+        Tag* tag_;
+        Val* start_;
+        Val* stop_;
+		Inc* inc_;
+        mutable Val* current_;
 };
 
 #endif

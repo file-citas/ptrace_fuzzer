@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     state.cpp \
     vrange.cpp \
     vrangemodel.cpp \
-    rdel.cpp
+    rdel.cpp \
+    inc.cpp
 
 HEADERS  += mainwindow.h \
     val.h \
@@ -53,6 +54,7 @@ HEADERS  += mainwindow.h \
     state.h \
     vrange.h \
     vrangemodel.h \
-    rdel.h
+    rdel.h \
+    inc.h
 
 FORMS    += mainwindow.ui
