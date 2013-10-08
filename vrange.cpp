@@ -5,8 +5,9 @@
 VRange::VRange(Tag* tag, Val* start_val, Val* stop_val) :
 	tag_(tag), start_(start_val), stop_(stop_val), current_(start_val)
 {
-    unsigned char incStep = 1;
-    inc_ = new IncNum(&incStep, 1);
+    inc_ = new IncSkip(stop_->val(), stop_->len());
+    //unsigned char step = 1;
+    //inc_ = new IncNum(&step, 1);
 }
 
 VRange::~VRange()
@@ -14,17 +15,19 @@ VRange::~VRange()
 	delete inc_;
 }
 
-bool VRange::setNext() const
+bool VRange::next() const
 {
-    current_->mkStr();
-    T::arget().write(tag_->loc(), (void*)current_->val(), tag_->len());
+    if(current_->cmp(*stop_)) return false;
     addr_t newLoc = inc_->inc(current_);
     if(newLoc != 0) {
 	    // TODO update back references;
 	    fprintf(stderr, "Variable moved to %lx\n", newLoc);
     }
-    if(current_->cmp(*stop_)) return false;
     return true;
+}
+void VRange::set() const
+{
+    T::arget().write(tag_->loc(), (void*)current_->val(), tag_->len());
 }
 
 void VRange::setInc(Inc* inc)

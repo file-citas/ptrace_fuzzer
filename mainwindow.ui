@@ -29,6 +29,9 @@
      <widget class="QTableView" name="vrangeTableView"/>
     </item>
     <item>
+     <widget class="QTextBrowser" name="textBrowser"/>
+    </item>
+    <item>
      <widget class="QPushButton" name="pushButton">
       <property name="text">
        <string>Fuzz</string>

@@ -14,7 +14,7 @@ MainWindow::MainWindow(Fuzzer* t, QWidget *parent) :
     tagmodel = new TagModel(t->tracer()->tags(), this);
     ui->tagtableview->setModel(tagmodel);
     ui->tagtableview->verticalHeader()->hide();
-    ui->tagtableview->horizontalHeader()->setStretchLastSection(true);
+    ui->tagtableview->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
     ui->tagtableview->setSelectionBehavior(QAbstractItemView::SelectRows);
     connect(ui->tagtableview,
             SIGNAL(doubleClicked(QModelIndex)),
@@ -28,7 +28,7 @@ MainWindow::MainWindow(Fuzzer* t, QWidget *parent) :
     // Create tableview for Code
     codemodel = new CodeModel(T::arget().getCode(), T::arget().getCi(), this);
     ui->codetableview->setModel(codemodel);
-    ui->codetableview->horizontalHeader()->setStretchLastSection(true);
+    ui->codetableview->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
     ui->codetableview->verticalHeader()->hide();
     connect(ui->codetableview->selectionModel(),
             SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
@@ -43,6 +43,7 @@ MainWindow::MainWindow(Fuzzer* t, QWidget *parent) :
     vrangemodel = new VRangeModel();
     ui->vrangeTableView->setModel(vrangemodel);
     ui->vrangeTableView->verticalHeader()->hide();
+    ui->vrangeTableView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
     ui->vrangeTableView->setEditTriggers(QAbstractItemView::AllEditTriggers);
     connect(tagmodel,
             SIGNAL(addVRange_signal(Tag*,Val*,Val*)),

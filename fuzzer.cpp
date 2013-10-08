@@ -34,12 +34,13 @@ void Fuzzer::fuzz(addr_t from, addr_t to, const std::vector<const VRange*>& vran
 
     // iterate over all values for all tags
     state.restore();
-	for( auto value : vrange ) {
-        while (value->setNext()) {
+    for( auto value : vrange ) {
+        do {
+            value->set();
 			fprintf(stderr, "Starting target with %s... \n", value->str());
 			T::arget().runTo(to);
-			getchar();
+            getchar();
             state.restore();
-		}
+        }while (value->next());
 	}
 }
