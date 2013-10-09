@@ -14,10 +14,10 @@
 #include <limits>
 
 Tracer::Tracer(int argc, char** argv) :
-    heap_min_(std::numeric_limits<addr_t>::max()),
-    heap_max_(0),
-    stack_min_(std::numeric_limits<addr_t>::max()),
-    stack_max_(0)
+	heap_min_(std::numeric_limits<addr_t>::max()),
+	heap_max_(0),
+	stack_min_(std::numeric_limits<addr_t>::max()),
+	stack_max_(0)
 {
 	// prep target
 	T::arget().init(argv);
@@ -27,13 +27,12 @@ Tracer::Tracer(int argc, char** argv) :
 	for(int i=0; i<argc; ++i) {
 		addr_t a = regs.rsi + i*sizeof(addr_t);
 		addr_t aDst = 0;
-        int len = strlen(argv[i])+1;
+		int len = strlen(argv[i])+1;
 		Tag* src = new Tag(a, sizeof(addr_t));
 		T::arget().read(a, (void*)&aDst, sizeof(addr_t));
-        Tag* dst = new Tag(aDst, len);
-        char tmp[16];
-        T::arget().read(aDst, (void*)&tmp, sizeof(addr_t));
-        fprintf(stderr, "%c\n", tmp[0]);
+		Tag* dst = new Tag(aDst, len);
+		char tmp[16];
+		T::arget().read(aDst, (void*)&tmp, sizeof(addr_t));
 
 		src->addTraceF(0, dst, PTR);
 		dst->addTraceB(0, src, PTR);
@@ -74,10 +73,10 @@ int Tracer::trace()
 	siginfo_t si;
 	T::arget().safe_ptrace(PTRACE_GETSIGINFO, 0 , &si); 
 
-	//printf("%lx\n", regs.rip);
-	if(regs.rip==0 ){//|| regs.rip==T::arget().cstop()) {
+	if(regs.rip==0){
+		fprintf(stderr, "DONE");
 		T::arget().protect_stack(PROT_READ|PROT_WRITE);
-		T::arget().safe_ptrace(PTRACE_CONT, 0, NULL);
+		//T::arget().safe_ptrace(PTRACE_CONT, 0, NULL);
 		return 0; // we are done
 	}
 
@@ -85,11 +84,14 @@ int Tracer::trace()
 	T::arget().protect_stack(PROT_READ|PROT_WRITE);
 
 	// if the next instruction is not in our area we break on return
-    if(!T::arget().inCode(regs.rip)) {
-		fprintf(stderr, "%lx not in code\n", regs.rip);
+	if(!T::arget().inCode(regs.rip)) {
 		addr_t returnadr = T::arget().safe_ptrace(PTRACE_PEEKTEXT, 
 				regs.rsp, NULL);
-		if(returnadr==0) return 0;
+		if(returnadr==0)  {
+			//fprintf(stderr, "DONE");
+			//T::arget().protect_stack(PROT_READ|PROT_WRITE);
+			return 0;
+		}
 		T::arget().bp()->set(returnadr);
 		T::arget().safe_ptrace(PTRACE_CONT, 0, NULL);
 
@@ -101,7 +103,22 @@ int Tracer::trace()
 		return 1;
 	}
 
+
+	//T::arget().safe_ptrace(PTRACE_GETREGS, 0, &regs);
+	//try{
+	//	const _DInst* inst = T::arget().getI(regs.rip);
+	//	const _DInst* inst2 = T::arget().getI(regs.rip+inst->size);
+	//	if(inst2->opcode == 0xc9){
+	//		fprintf(stderr, "DONE");
+	//		T::arget().protect_stack(PROT_READ|PROT_WRITE);
+	//		//T::arget().safe_ptrace(PTRACE_CONT, 0, NULL);
+	//		return 0; // we are done
+	//	}
+	//} catch(...) {
+	//	fprintf(stderr, "%lx\n",regs.rip);
+	//}
 	// handle signal
+	last_ = regs.rip;
 	switch(si.si_signo) {
 		case SIGTRAP:
 			handle_cjmp();
@@ -128,8 +145,6 @@ int Tracer::handle_cjmp()
 	addr_t rip = regs.rip-0x1; // -0x1 because 'int $0x3' has already been executed
 	T::arget().bp()->unset(rip);
 
-	fprintf(stderr, "cjmp at %lx\n", regs.rip);
-
 	// create branch instance
 	const _DInst* ijmp = T::arget().getI(rip);
 	addr_t to = 0;
@@ -140,7 +155,7 @@ int Tracer::handle_cjmp()
 	Branch* b = new Branch(rip, to);
 	if(!addBranch(b))
 		return 0;
-	
+
 	// iterate over last accessed tags
 	std::vector<Tag*>::reverse_iterator tag = last_tag_.rbegin();
 	for(; tag!=last_tag_.rend(); ++tag) {
@@ -152,15 +167,11 @@ int Tracer::handle_cjmp()
 			const _DInst* inst = T::arget().getI(lastRip+off);
 			// compared accessed flags
 			if(inst->modifiedFlagsMask & ijmp->testedFlagsMask) {
-				fprintf(stderr, "Set in %lx\n", lastRip+off);
 				if(inst->ops[0].type == O_IMM || inst->ops[1].type == O_IMM) {
-					fprintf(stderr, "value %lx\n", inst->imm.sqword);
 					regs.rip = rip;
 					T::arget().safe_ptrace(PTRACE_SETREGS, 0, &regs);
 					return 1;
 				}
-				else 
-					fprintf(stderr, "No immediate operands\n");
 				size_t len = fmin((*tag)->lastAccess()->len(),inst->ops[0].size);
 				Val* val = new Val((unsigned char*)&inst->imm.sqword, len);
 				Cond* c = new Cond((*tag), val);
@@ -201,14 +212,13 @@ int Tracer::handle_segv(addr_t loc, addr_t rip)
 							if(ta->atype()==READ && // read<->write
 									a->reg() == ta->reg()) {
 								t->addTraceB(rip, *ltag, CPY);
-                                (*ltag)->addTraceF(rip, t, CPY);
+								(*ltag)->addTraceF(rip, t, CPY);
 							}
 						}
 					}
 					break;
 				default:
 					delete t;
-					fprintf(stderr, "NO TYPE\n");
 			}
 		} catch (...) {
 			return 0;

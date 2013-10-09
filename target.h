@@ -42,6 +42,8 @@ class T
 		const _CodeInfo* getCi() const;
 		const std::map<addr_t, _DInst*>& getCode() const { return rip_i_;}
 		addr_t cstop() const {return code_stop_;}
+		addr_t sstart() const {return stack_start_;}
+		int fd() const { return fd_;}
 
 		// helper
 		bool inCode(addr_t loc) const;
@@ -99,6 +101,8 @@ class T
 		std::map<addr_t, _DInst*> rip_i_;
 		State* initial_state_;
 		addr_t used_;
+		int fd_;
+
 };
 
 #endif

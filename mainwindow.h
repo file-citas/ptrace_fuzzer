@@ -23,6 +23,7 @@ public:
     
 private slots:
     void startFuzz();
+    void error(QString err);
 
 private:
     Ui::MainWindow *ui;

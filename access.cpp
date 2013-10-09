@@ -37,8 +37,6 @@ Access::Access(addr_t rip, addr_t loc) :
 	if(atype_==IDK || len_<1)
 		throw InvalidMem();
 	val_ = new Val(loc_, len_);
-	fprintf(stderr, "%d access on %lx at %lx (reg %d) : %s\n", 
-			atype_, loc_, rip_, reg_, val_->str());
 }
 
 Access::~Access()

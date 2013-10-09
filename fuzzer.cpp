@@ -9,6 +9,8 @@ Fuzzer::Fuzzer(int argc, char** argv)
 	tracer_ = new Tracer(argc, argv);
 	// initial run
 	while(tracer_->trace());
+	T::arget().reset();
+	T::arget().runTo(tracer_->last());
 }
 
 Fuzzer::~Fuzzer()
@@ -18,28 +20,32 @@ Fuzzer::~Fuzzer()
 
 void Fuzzer::fuzz(addr_t from, addr_t to, const std::vector<const VRange*>& vrange)
 {
-    if(from>to) std::swap(from, to);
+	if(from>to) std::swap(from, to);
+	fprintf(stdout, "\nStarting Fuzz from %lx to %lx\n", from, to);
 	// reset target
 	T::arget().reset();
-	// run to start event
+//	T::arget().runTo(tracer_->last());
+//	T::arget().reset();
 	T::arget().runTo(from);
 	// save state
 	struct user_regs_struct regs;
 	T::arget().safe_ptrace(PTRACE_GETREGS, 0, &regs);
 	State state(regs, Memstate(tracer_->heap_min(), tracer_->heap_max()), 
-			Memstate(tracer_->stack_min(), tracer_->stack_max()));
+			Memstate(T::arget().sstart(), T::arget().sstart()+2048));
+			//Memstate(tracer_->stack_min(), tracer_->stack_max()));
+	//T::arget().runTo(to);
 
-
-	fprintf(stderr, "Starting Fuzz from %lx to %lx\n", from, to);
-
-    // iterate over all values for all tags
-    state.restore();
-    for( auto value : vrange ) {
-        do {
-            value->set();
-			fprintf(stderr, "Starting target with %s... \n", value->str());
+	// iterate over all values for all tags
+	for( auto value : vrange ) {
+		do {
+			Val test(value->tag()->loc(),value->tag()->len());
+			fprintf(stderr, "val: %s\n", test.str());
+			value->set();
+			fprintf(stderr, "Starting target with %lx: %s ... \n\n", 
+					value->tag()->loc(), value->str());
 			T::arget().runTo(to);
-            state.restore();
-        }while (value->next());
+			fprintf(stderr, "\nDone\n");
+			state.restore();
+		}while (value->next());
 	}
 }

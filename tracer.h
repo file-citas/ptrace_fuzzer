@@ -28,6 +28,7 @@ class Tracer
 		addr_t heap_max() const { return heap_max_; }
 		addr_t stack_min() const { return stack_min_; }
 		addr_t stack_max() const { return stack_max_; }
+		addr_t last() const {return last_;}
 
 	private:
 		int handle_cjmp();
@@ -45,6 +46,7 @@ class Tracer
 		addr_t heap_max_;
 		addr_t stack_min_;
 		addr_t stack_max_;
+		addr_t last_;
 };
 
 #endif

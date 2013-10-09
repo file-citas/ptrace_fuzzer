@@ -9,7 +9,6 @@ CodeModel::CodeModel(
     codeToRip_(code), ci_(ci)
 {
     size_ = codeToRip_.size();
-    fprintf(stderr, "%d\n", size_);
     for(auto line : codeToRip_) {
         _DInst* inst = line.second;
         code_.push_back(inst);

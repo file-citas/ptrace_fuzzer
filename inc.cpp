@@ -5,24 +5,19 @@
 #include <assert.h>
 #include <math.h>
 
-Inc::Inc(unsigned char* incStep, int len, ITYPE itype) :
+Inc::Inc(const unsigned char* incStep, int len, ITYPE itype) :
     len_(len), itype_(itype)
 {
-    if(itype_==SKIP)
-        incStep_ = incStep;
-    else {
-        incStep_ = new unsigned char[len_];
-        for(int i=0; i<len_ ; ++i)
-            incStep_[i] = incStep[i];
-    }
+    incStep_ = new unsigned char[len_];
+    for(int i=0; i<len_ ; ++i)
+        incStep_[i] = incStep[i];
     maxChar_ = std::numeric_limits<unsigned char>::max();
 }
 Inc::~Inc()
 {
     delete[] incStep_;
 }
-
-IncNum::IncNum(unsigned char* incStep, int len) :
+IncNum::IncNum(const unsigned char* incStep, int len) :
     Inc(incStep, len, IVAL)
 {
 }
@@ -48,8 +43,8 @@ addr_t IncNum::inc(Val* val, unsigned char maxByte)
     return newLoc;
 }
 
-IncStrLen::IncStrLen(unsigned char* incStep, int len) :
-    Inc(incStep, len, ILEN)
+IncStrLen::IncStrLen(const unsigned char* incStep, int len) :
+    Inc(incStep, len, ILEN), currentByte_(len)
 {
     assert(len==1);
 }
@@ -59,21 +54,21 @@ IncStrLen::~IncStrLen()
 addr_t IncStrLen::inc(Val* val, unsigned char maxByte)
 {
     addr_t newLoc = 0;
-    int vLen = val->len();
+    int vLen = val->len()+1;
     if(vLen < maxByte)
     {
         val->len(maxByte);
         vLen = maxByte;
     }
-    int currentByte = strlen((char*)val->val())+1;
-    assert(currentByte < vLen);
+    int currentByte = strlen((char*)val->val());
+    if(currentByte >= vLen-1) return 1;
     val->val()[currentByte] = 'a';
     val->val()[currentByte+1] = 0;
     val->mkStr();
     return newLoc;
 }
 
-IncSkip::IncSkip(unsigned char* incStep, int len) :
+IncSkip::IncSkip(const unsigned char* incStep, int len) :
     Inc(incStep, len, SKIP)
 {
 }
@@ -90,8 +85,6 @@ addr_t IncSkip::inc(Val* val, unsigned char maxByte)
         vLen = maxByte;
     }
     for(int i=0; i<vLen; ++i) {
-        fprintf(stderr, "%2x %2x\n", val->val()[i],
-                incStep_[i]);
         val->val()[i] = incStep_[i];
     }
     val->mkStr();
