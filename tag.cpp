@@ -34,7 +34,6 @@ Tag::~Tag()
 	for( ; jt!=tbackw_.end(); ++jt)
 		delete jt->second;
 	// DO NOT double delete the access ptrs
-	// DO NOT double delete the access ptrs
 }
 
 const Access* Tag::lastAccess() const
@@ -113,13 +112,17 @@ TAGTYPE Tag::guessType() // TODO: make better ...
 
 void Tag::loc(addr_t newLoc)
 {
+    fprintf(stderr, "Changed location %lx -> %lx\n",
+            loc_, newLoc);
 	loc_ = newLoc;
 	for(auto back : tbackw_) {
-		if(back.second->ttype==PTR)
+		if(back.second->ttype==PTR) {
 			T::arget().write(back.second->tag->loc(), &newLoc, sizeof(addr_t));
+			fprintf(stderr, "Updated Tag at %lx\n", back.second->tag->loc());
+		}
 	}
 }
- void Tag::len(int newLen)
+void Tag::len(int newLen)
 {
 	len_ = newLen;
 	loc(T::arget().findSpace(len_));

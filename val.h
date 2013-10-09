@@ -16,6 +16,11 @@ class Val
 		const unsigned char* val() const {return val_;}
 		unsigned char* val() {return val_;}
 		void val(unsigned char* newVal, int newLen);
+		bool isTerminated() const { return val_[len_-1]==0; }
+		void terminate() {
+			len(len_+1);
+			val_[len_-1] = 0;
+		}
 
 		bool cmp(const Val& val) const;
 		const char* str() const {return str_;}

@@ -165,7 +165,8 @@ void TagModel::doubleClicked_slot(QModelIndex index)
      memset(val, 0, tag->len());
      emit addVRange_signal(tag,
                            new Val(tag->loc(), tag->len()),
-                           new Val(tag->loc(), tag->len()));
+                           new Val(tag->loc(), tag->len()),
+			   it->second->color());
 
 }
 

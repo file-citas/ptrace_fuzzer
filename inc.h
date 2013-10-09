@@ -10,7 +10,7 @@ enum ITYPE{SKIP, IVAL, ILEN};
 class Inc
 {
 	public:
-        Inc(unsigned char* incStep, int len, ITYPE itype);
+        Inc(const unsigned char* incStep, int len, ITYPE itype);
 		virtual ~Inc();
 		virtual addr_t inc(Val* v, unsigned char maxByte = 0) = 0;
         ITYPE type() const {return itype_;}
@@ -25,7 +25,7 @@ class Inc
 class IncNum : public Inc
 {
 	public:
-		IncNum(unsigned char* incStep, int len);
+		IncNum(const unsigned char* incStep, int len);
 		virtual ~IncNum();
 		virtual addr_t inc(Val* val, unsigned char maxByte = 0);
 
@@ -34,7 +34,7 @@ class IncNum : public Inc
 class IncStr : public Inc
 {
 	public:
-		IncStr(unsigned char* incStep, int len);
+		IncStr(const unsigned char* incStep, int len);
 		virtual ~IncStr();
 		virtual addr_t inc(Val* val, unsigned char maxByte = 0);
 	private:
@@ -49,10 +49,11 @@ class IncStr : public Inc
 class IncStrLen : public Inc
 {
 	public:
-		IncStrLen(unsigned char* incStep, int len);
+		IncStrLen(const unsigned char* incStep, int len);
 		virtual ~IncStrLen();
 		virtual addr_t inc(Val* val, unsigned char maxByte = 0);
 	private:
+		int currentByte_;
 		// TODO
 
 };
@@ -61,7 +62,7 @@ class IncStrLen : public Inc
 class IncSkip : public Inc
 {
     public:
-        IncSkip(unsigned char* incStep, int len);
+        IncSkip(const unsigned char* incStep, int len);
         virtual ~IncSkip();
         virtual addr_t inc(Val* val, unsigned char maxByte = 0);
     private:

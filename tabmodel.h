@@ -50,7 +50,7 @@ public:
 protected:
 
 signals:
-    void addVRange_signal(Tag* tag, Val* from, Val* to);
+    void addVRange_signal(Tag* tag, Val* from, Val* to, const QColor* tagColor);
     
 public slots:
     void doubleClicked_slot(QModelIndex);

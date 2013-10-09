@@ -58,9 +58,8 @@ int T::init(char** argv)
 	pid_ = fork();
 	if(pid_ == 0) { // child
 		// disable aslr for child .. just for fun
-		int orig_personality = personality(0xffffffff);
-		personality(orig_personality|ADDR_NO_RANDOMIZE);
-		fprintf(stderr, "+%5d+ created child\n", getpid());
+		//int orig_personality = personality(0xffffffff);
+		//personality(orig_personality|ADDR_NO_RANDOMIZE);
 		ptrace(PTRACE_TRACEME, 0, NULL, NULL);
 		// execute target (will cause a SIGTRAP)
 		execv(argv[0], argv);
@@ -110,20 +109,17 @@ int T::init(char** argv)
 		// store initial state
 		struct user_regs_struct regs;
 		safe_ptrace(PTRACE_GETREGS, 0, &regs);
-		initial_state_ = new State(regs, Memstate(0,0), Memstate(stack_start_, stack_start_+256));
+		initial_state_ = new State(regs, Memstate(0,0), Memstate(stack_start_, stack_start_+2048));
 		//code_start_ = elf_->get_func((char*)"_start");
 		// TODO: allgemein richtig?
 		code_start_ = elf_->get_func((char*)"frame_dummy") + 0x2c;
 		code_stop_ = elf_->get_func((char*)"__libc_csu_init");
-		fprintf(stderr, "+%5d+ code segment %lx-%lx\n", pid_, code_start_, code_stop_);
-		fprintf(stderr, "+%5d+ stack segment %lx-%lx\n", pid_, stack_start_, stack_stop_);
 
 		syscall_addr_ = elf_->get_func((char*)"_start");
 		//char* mp = (char*)&mprotect_syscall+4;
 		unsigned char* mp = mpsyc;
 		//size_t protect_stack_none_len = (addr_t)mprotect_syscall_end - (addr_t)mprotect_syscall-2;
 		size_t protect_stack_none_len = 11;
-		fprintf(stderr, "Writing mprotect at %lx (%ld bytes)\n", syscall_addr_, protect_stack_none_len);
 
 		write(syscall_addr_, 
 				(void*)mp, protect_stack_none_len);
@@ -157,7 +153,6 @@ int T::init(char** argv)
 
 
 			if(META_GET_FC(result[i].meta) == FC_CND_BRANCH) {
-				fprintf(stderr, "conditional jump at %lx\n", result[i].addr);
 				cjmp.push_back(result[i].addr);
 			}
 			_DInst* inst = new _DInst;
@@ -328,7 +323,6 @@ const _CodeInfo* T::getCi() const
 
 void T::reset()
 {
-    fprintf(stderr, "Resetting Target\n");
 	initial_state_->restore();
 }
 
@@ -336,7 +330,6 @@ void T::runTo(addr_t rip)
 {
     struct user_regs_struct regs;
     T::arget().safe_ptrace(PTRACE_GETREGS, 0, &regs);
-    fprintf(stderr, "Run from %lx to %lx\n", regs.rip, rip);
 	assert(inCode(rip));
 	bp_->set(rip);
 	safe_ptrace(PTRACE_CONT, 0, NULL);
@@ -344,7 +337,6 @@ void T::runTo(addr_t rip)
 	waitpid(pid_, &status, 0);
     bp_->unset(rip);
     safe_ptrace(PTRACE_GETREGS, 0, &regs);
-    fprintf(stderr, "ok (RIP: %lx)\n", regs.rip);
 }
 
 addr_t T::findSpace(int len)

@@ -31,7 +31,8 @@ SOURCES += main.cpp\
     vrange.cpp \
     vrangemodel.cpp \
     rdel.cpp \
-    inc.cpp
+    inc.cpp \
+    outputthread.cpp
 
 HEADERS  += mainwindow.h \
     val.h \
@@ -55,6 +56,7 @@ HEADERS  += mainwindow.h \
     vrange.h \
     vrangemodel.h \
     rdel.h \
-    inc.h
+    inc.h \
+    outputthread.h
 
 FORMS    += mainwindow.ui

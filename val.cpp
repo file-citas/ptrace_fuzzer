@@ -36,16 +36,16 @@ int Val::mkStr()
 	//if(str_) delete[] str_;
 	str_ = new char[len_*4+1];
 	int i;
-    for(i=0; i<len_; i++) {
-        snprintf(&str_[i*3], 4, "%2X ", val_[i]);
+	for(i=0; i<len_; i++) {
+		snprintf(&str_[i*3], 4, "%2X ", val_[i]);
 	}
-    str_[i*3] = 0;
+	str_[i*3] = 0;
 	return i;
 }
 
 bool Val::cmp(const Val &val) const
 {
-    for(int i=0; i<len_ && i<val.len(); ++i) {
+	for(int i=0; i<len_ && i<val.len(); ++i) {
 		if(val_[i]!=val.val()[i])
 			return false;
 	}
@@ -54,12 +54,22 @@ bool Val::cmp(const Val &val) const
 
 void Val::len(int newLen)
 {
-	len_ = newLen;
+	if(newLen>len_) {
+		unsigned char* newVal = new unsigned char[newLen];
+		for(int i=0; i<len_; ++i)
+			newVal[i] = val_[i];
+		for(int i=len_; i<newLen; ++i)
+			newVal[i] = 0;
+		delete val_;
+		val_=newVal;
+		len_ = newLen;
+	}
 }
 void Val::val(unsigned char* newVal, int newLen)
 {
-	assert(newLen<=len_);
+	len(newLen);
 	for(int i=0; i<newLen; ++i) {
 		val_[i] = newVal[i];
 	}
+	mkStr();
 }

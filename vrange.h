@@ -8,23 +8,28 @@
 class VRange
 {
 	public:
-        VRange(Tag* t, Val *start_val, Val *stop_val);
+		VRange(Tag* t, Val *from_val, Val *to_val);
 		~VRange();
 
-        bool next() const;
-        void set() const;
-		void setInc(Inc* inc);
-        const Inc* inc() {return inc_;}
-		const char* str() const {
-            return current_->str();
-		}
+		bool next() const;
+		void set() const;
+
+		const Tag* tag() const {return tag_;}
+		void inc(Inc* inc);
+		const Inc* inc() {return inc_;}
+		const Val* from() const {return from_;}
+		const Val* to() const {return to_;}
+		void from(Val* from);
+		void to(Val* from);
+		const char* str() const {return current_->str();}
 
 	private:
-        Tag* tag_;
-        Val* start_;
-        Val* stop_;
+		Tag* tag_;
+		Val* from_;
+		Val* to_;
 		Inc* inc_;
-        mutable Val* current_;
+		int len_;
+		mutable Val* current_;
 };
 
 #endif
