@@ -29,10 +29,10 @@ Tracer::Tracer(int argc, char** argv) :
 		addr_t aDst = 0;
 		int len = strlen(argv[i])+1;
 		Tag* src = new Tag(a, sizeof(addr_t));
-		T::arget().read(a, (void*)&aDst, sizeof(addr_t));
+		T::arget().readTarget(a, (void*)&aDst, sizeof(addr_t));
 		Tag* dst = new Tag(aDst, len);
 		char tmp[16];
-		T::arget().read(aDst, (void*)&tmp, sizeof(addr_t));
+		T::arget().readTarget(aDst, (void*)&tmp, sizeof(addr_t));
 
 		src->addTraceF(0, dst, PTR);
 		dst->addTraceB(0, src, PTR);

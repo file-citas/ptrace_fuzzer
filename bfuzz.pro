@@ -10,7 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = bfuzz
 TEMPLATE = app
-LIBS += -lelf -ldistorm3 -lm
+LIBS += -lelf -ldistorm3 -lm  -lutil
 QMAKE_CXXFLAGS += -std=c++0x -g
 
 SOURCES += main.cpp\

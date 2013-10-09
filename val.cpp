@@ -6,7 +6,7 @@ Val::Val(addr_t loc, int len) :
 	len_(len)
 {
 	val_ = new unsigned char[len_];
-	T::arget().read(loc, val_, len_);
+	T::arget().readTarget(loc, val_, len_);
 	mkStr();
 }
 Val::Val(unsigned char* val, int len) :
