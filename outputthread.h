@@ -14,6 +14,7 @@ public:
 private:
 signals:
     void error(QString err);
+    void text_signal(QString);
     void finished();
 
     

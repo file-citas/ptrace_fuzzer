@@ -8,7 +8,7 @@ Memstate::Memstate(addr_t from, addr_t to) :
 {
     if(from_<to_) {
         data_ = new unsigned char[to_-from_];
-        T::arget().read(from_, (void*)data_, to_-from_);
+        T::arget().readTarget(from_, (void*)data_, to_-from_);
     }
 }
 Memstate::Memstate(const Memstate& memstate) :
@@ -28,7 +28,7 @@ Memstate::~Memstate()
 void Memstate::restore() const
 {
     if(data_) {
-        T::arget().write(from_, (void*)&data_, to_-from_);
+        T::arget().writeTarget(from_, (void*)&data_, to_-from_);
 	//fprintf(stderr, "Restoring state from %lx to %lx\n", from_, to_);
     }
 }

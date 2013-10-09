@@ -33,7 +33,7 @@ bool VRange::next() const
 }
 void VRange::set() const
 {
-	T::arget().write(tag_->loc(), (void*)current_->val(), tag_->len());
+	T::arget().writeTarget(tag_->loc(), (void*)current_->val(), tag_->len());
 }
 void VRange::from(Val* newVal)
 {

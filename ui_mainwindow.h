@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Wed Oct 9 16:05:41 2013
+** Created: Wed Oct 9 23:25:22 2013
 **      by: Qt User Interface Compiler version 4.8.3
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -32,14 +32,16 @@ class Ui_MainWindow
 {
 public:
     QWidget *centralWidget;
+    QHBoxLayout *horizontalLayout_3;
+    QVBoxLayout *verticalLayout;
+    QTableView *vrangeTableView;
     QHBoxLayout *horizontalLayout_2;
+    QTextBrowser *textBrowser;
+    QTextBrowser *textBrowserTarget;
+    QPushButton *pushButton;
     QHBoxLayout *horizontalLayout;
     QTableView *tagtableview;
     QTableView *codetableview;
-    QVBoxLayout *verticalLayout;
-    QTableView *vrangeTableView;
-    QTextBrowser *textBrowser;
-    QPushButton *pushButton;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -48,13 +50,45 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
-        MainWindow->resize(433, 369);
+        MainWindow->resize(659, 397);
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
-        horizontalLayout_2 = new QHBoxLayout(centralWidget);
+        horizontalLayout_3 = new QHBoxLayout(centralWidget);
+        horizontalLayout_3->setSpacing(6);
+        horizontalLayout_3->setContentsMargins(11, 11, 11, 11);
+        horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
+        verticalLayout = new QVBoxLayout();
+        verticalLayout->setSpacing(6);
+        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
+        vrangeTableView = new QTableView(centralWidget);
+        vrangeTableView->setObjectName(QString::fromUtf8("vrangeTableView"));
+
+        verticalLayout->addWidget(vrangeTableView);
+
+        horizontalLayout_2 = new QHBoxLayout();
         horizontalLayout_2->setSpacing(6);
-        horizontalLayout_2->setContentsMargins(11, 11, 11, 11);
         horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
+        textBrowser = new QTextBrowser(centralWidget);
+        textBrowser->setObjectName(QString::fromUtf8("textBrowser"));
+
+        horizontalLayout_2->addWidget(textBrowser);
+
+        textBrowserTarget = new QTextBrowser(centralWidget);
+        textBrowserTarget->setObjectName(QString::fromUtf8("textBrowserTarget"));
+
+        horizontalLayout_2->addWidget(textBrowserTarget);
+
+
+        verticalLayout->addLayout(horizontalLayout_2);
+
+        pushButton = new QPushButton(centralWidget);
+        pushButton->setObjectName(QString::fromUtf8("pushButton"));
+
+        verticalLayout->addWidget(pushButton);
+
+
+        horizontalLayout_3->addLayout(verticalLayout);
+
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setSpacing(6);
         horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
@@ -69,33 +103,12 @@ public:
         horizontalLayout->addWidget(codetableview);
 
 
-        horizontalLayout_2->addLayout(horizontalLayout);
-
-        verticalLayout = new QVBoxLayout();
-        verticalLayout->setSpacing(6);
-        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
-        vrangeTableView = new QTableView(centralWidget);
-        vrangeTableView->setObjectName(QString::fromUtf8("vrangeTableView"));
-
-        verticalLayout->addWidget(vrangeTableView);
-
-        textBrowser = new QTextBrowser(centralWidget);
-        textBrowser->setObjectName(QString::fromUtf8("textBrowser"));
-
-        verticalLayout->addWidget(textBrowser);
-
-        pushButton = new QPushButton(centralWidget);
-        pushButton->setObjectName(QString::fromUtf8("pushButton"));
-
-        verticalLayout->addWidget(pushButton);
-
-
-        horizontalLayout_2->addLayout(verticalLayout);
+        horizontalLayout_3->addLayout(horizontalLayout);
 
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QString::fromUtf8("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 433, 23));
+        menuBar->setGeometry(QRect(0, 0, 659, 23));
         MainWindow->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QString::fromUtf8("mainToolBar"));

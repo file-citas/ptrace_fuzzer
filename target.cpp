@@ -3,6 +3,8 @@
 #include "distorm.h"
 #include "state.h"
 
+#include <pty.h>
+#include <utmp.h>
 #include <stdlib.h>
 #include <sys/user.h>     /* struct user */
 #include <assert.h>       /* assert */
@@ -55,18 +57,30 @@ T::~T()
 int T::init(char** argv)
 {
 	if(init_) return 1;
+	//fd_ = open("fuzz.out", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | O_DIRECT | O_TRUNC | O_NONBLOCK);
+
+	int master, slave;
+	openpty(&master, &slave, NULL, NULL, NULL);
 	pid_ = fork();
 	if(pid_ == 0) { // child
+		ptrace(PTRACE_TRACEME, 0, NULL, NULL);
+		login_tty(slave);
+		close(master);
+		//close(1);
+		//close(2);
+		//dup2(fd_, 1);
+		//dup2(fd_, 2);
+		//close(fd_);
 		// disable aslr for child .. just for fun
 		//int orig_personality = personality(0xffffffff);
 		//personality(orig_personality|ADDR_NO_RANDOMIZE);
-		ptrace(PTRACE_TRACEME, 0, NULL, NULL);
 		// execute target (will cause a SIGTRAP)
 		execv(argv[0], argv);
 		perror("execv");
 	} else {
+		close(slave);
+		read_handle_ = master;
 		init_ = true;
-
 		ptrace(PTRACE_SETOPTIONS, pid_, NULL,
 				PTRACE_O_TRACEFORK);
 		waitpid(pid_, NULL, 0);
@@ -121,7 +135,7 @@ int T::init(char** argv)
 		//size_t protect_stack_none_len = (addr_t)mprotect_syscall_end - (addr_t)mprotect_syscall-2;
 		size_t protect_stack_none_len = 11;
 
-		write(syscall_addr_, 
+		writeTarget(syscall_addr_, 
 				(void*)mp, protect_stack_none_len);
 
 		const size_t nInst = (code_stop_ - code_start_); // TODO
@@ -130,7 +144,7 @@ int T::init(char** argv)
 		memset(result, 0, nInst*sizeof(_DInst));
 		unsigned int instructions_count = 0;
 
-		read(code_start_, (void*)my_code_stream, nInst);
+		readTarget(code_start_, (void*)my_code_stream, nInst);
 
 		_CodeInfo ci = {0};
 		ci.code = my_code_stream;
@@ -199,7 +213,7 @@ int T::singlestep()
 	if(si.si_signo!=SIGTRAP) {
 		fprintf(stderr, "SI at %lx\n", regs.rip);
 		char i[16];
-		read(regs.rip, i, 16);
+		readTarget(regs.rip, i, 16);
 		for(int j=0; j<8; ++j)
 			fprintf(stderr, "%2x ", 0xff&i[j]);
 		fprintf(stderr, "\n");
@@ -210,9 +224,9 @@ int T::singlestep()
 	return si.si_signo;
 }
 
-int T::write(addr_t addr, void *vptr, size_t len) const
+int T::writeTarget(addr_t addr, void *vptr, size_t len) const
 {
-    if(!init_) {NoInit exp; throw(exp);}
+	if(!init_) {NoInit exp; throw(exp);}
 	size_t i, j;
 	long new_word;
 	long orig_word;
@@ -229,7 +243,7 @@ int T::write(addr_t addr, void *vptr, size_t len) const
 	return i;
 }
 
-int T::read(addr_t addr, void *vptr, size_t len) const
+int T::readTarget(addr_t addr, void *vptr, size_t len) const
 {
 	if(!init_) {NoInit exp; throw(exp);}
 	size_t i, j;
@@ -252,7 +266,7 @@ size_t T::getStrLen(addr_t loc)
 	char* str = new char[n];
 	size_t cntr = 0;
 	while(cntr < MAXSTRLEN) {
-		read(loc, str, n);
+		readTarget(loc, str, n);
 		for(size_t i=0; i<n; ++i)
 			if(str[i]==0) {
 				delete str;
@@ -328,15 +342,15 @@ void T::reset()
 
 void T::runTo(addr_t rip)
 {
-    struct user_regs_struct regs;
-    T::arget().safe_ptrace(PTRACE_GETREGS, 0, &regs);
+	struct user_regs_struct regs;
+	T::arget().safe_ptrace(PTRACE_GETREGS, 0, &regs);
 	assert(inCode(rip));
 	bp_->set(rip);
 	safe_ptrace(PTRACE_CONT, 0, NULL);
 	int status;
 	waitpid(pid_, &status, 0);
-    bp_->unset(rip);
-    safe_ptrace(PTRACE_GETREGS, 0, &regs);
+	bp_->unset(rip);
+	safe_ptrace(PTRACE_GETREGS, 0, &regs);
 }
 
 addr_t T::findSpace(int len)
@@ -344,4 +358,44 @@ addr_t T::findSpace(int len)
 	used_+=len; 
 	// TODO
 	return stack_start_ + 0x1024 + used_;
+}
+
+bool T::read_from_child(std::string& buff) 
+{
+	fd_set  rs;
+	timeval timeout;
+
+	memset(&rs, 0, sizeof(rs));
+	FD_SET(read_handle_, &rs);
+	timeout.tv_sec  = 1; // 1 second
+	timeout.tv_usec = 0;
+
+	int rc = select(read_handle_+1, &rs, NULL, NULL, &timeout);
+	if ( rc == 0 ) {
+		// timeout
+		return true;
+
+	} else if ( rc > 0 ) {
+		// there is something to read
+		char buffer[1024]; // our read buffer
+		memset(buffer, 0, sizeof(buffer));
+		if(read(read_handle_, buffer, sizeof(buffer)) > 0) {
+			fprintf(stderr, "2\n");
+			buff.clear();
+			buff.append( buffer );
+			fprintf(stderr, "%s\n", buffer);
+			return true;
+		}
+
+		return false;
+	} else { /* == 0 */
+		if ( rc == EINTR || rc == EAGAIN ) {
+			return true;
+		}
+
+		// Process terminated
+		int status(0);
+		waitpid(pid_, &status, 0);
+		return false;
+	}
 }

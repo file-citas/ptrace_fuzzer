@@ -10,7 +10,7 @@ class Fuzzer {
 		Fuzzer(int argc, char** argv);
 		~Fuzzer();
 
-        void fuzz(addr_t from, addr_t to, const std::vector<const VRange*>& vrange);
+		void fuzz(addr_t from, addr_t to, const std::vector<const VRange*>& vrange);
 
 		const Tracer* tracer() const { return tracer_;}
 

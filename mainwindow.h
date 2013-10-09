@@ -24,6 +24,7 @@ public:
 private slots:
     void startFuzz();
     void error(QString err);
+    void text_slot(QString err);
 
 private:
     Ui::MainWindow *ui;

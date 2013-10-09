@@ -5,6 +5,7 @@
 #include "break.h"
 #include "distorm.h"
 #include <map>
+#include <string>
 
 typedef addr_t _OffsetType;
 
@@ -43,7 +44,7 @@ class T
 		const std::map<addr_t, _DInst*>& getCode() const { return rip_i_;}
 		addr_t cstop() const {return code_stop_;}
 		addr_t sstart() const {return stack_start_;}
-		int fd() const { return fd_;}
+		//int fd() const { return fd_;}
 
 		// helper
 		bool inCode(addr_t loc) const;
@@ -58,9 +59,9 @@ class T
 		// set protection flags for stack segment
 		int protect_stack(int prot);
 		// read from target process
-		int read(addr_t loc, void* val, size_t len) const;
+		int readTarget(addr_t loc, void* val, size_t len) const;
 		// write to target process
-		int write(addr_t loc, void* val, size_t len) const;
+		int writeTarget(addr_t loc, void* val, size_t len) const;
 
 		// reset target to original state
 		void reset();
@@ -69,6 +70,8 @@ class T
 
 		// find len bytes of free memory 
 		addr_t findSpace(int len);
+
+		bool read_from_child(std::string& buff);
 
 	private:
 		T() : init_(false), pid_(0) {};
@@ -102,6 +105,7 @@ class T
 		State* initial_state_;
 		addr_t used_;
 		int fd_;
+		int read_handle_;
 
 };
 

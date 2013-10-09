@@ -96,7 +96,7 @@ TAGTYPE Tag::guessType() // TODO: make better ...
 {
 	size_t n = sizeof(_OffsetType);
 	char* val = new char[n];
-	T::arget().read(loc_, val, 1);
+	T::arget().readTarget(loc_, val, 1);
 	if(T::arget().inStack((_OffsetType)*val)) { // TODO: change criteria
 		return TT_PTR;
 	} else {
@@ -117,7 +117,7 @@ void Tag::loc(addr_t newLoc)
 	loc_ = newLoc;
 	for(auto back : tbackw_) {
 		if(back.second->ttype==PTR) {
-			T::arget().write(back.second->tag->loc(), &newLoc, sizeof(addr_t));
+			T::arget().writeTarget(back.second->tag->loc(), &newLoc, sizeof(addr_t));
 			fprintf(stderr, "Updated Tag at %lx\n", back.second->tag->loc());
 		}
 	}
