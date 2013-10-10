@@ -2,22 +2,26 @@
 #include "target.h"
 #include <stdio.h>
 
-Tag::Tag(addr_t loc, int len) :
-	loc_(loc), len_(len)
+Tag::Tag(addr_t loc, int len, addr_t rip, TAGTYPE type) :
+	loc_(loc), len_(len), type_(type)
 {
 	init_val_ = new Val(loc_, len_);
-	type_ = guessType();
-	fprintf(stderr, "Created Tag at %lx (+%d)\n", loc_, len_);
+	Access* a = new Access(rip, loc_, len_);
+	addAccess(a);
+	if(type == TT_UNKNOWN)
+		type_ = guessType();
+	fprintf(stderr, "Created Tag at %lx (+%d) type %d\n", loc_, len_, type_);
 }
 
-Tag::Tag(Access* a)
+Tag::Tag(Access* a, TAGTYPE type) : type_(type),
+	init_val_(a->val())
 {
 	addAccess(a);
 	loc_ = a->loc();
 	len_ = a->len();
-	type_ = guessType();
-	init_val_ = new Val(loc_, len_);
-	fprintf(stderr, "Created Tag at %lx (+%d)\n", loc_, len_);
+	if(type == TT_UNKNOWN)
+		type_ = guessType();
+	fprintf(stderr, "Created Tag at %lx (+%d) type %d\n", loc_, len_, type_);
 }
 
 Tag::~Tag()
@@ -94,26 +98,28 @@ int Tag::addTraceB(addr_t rip, Tag* t, TTYPE type)
 
 TAGTYPE Tag::guessType() // TODO: make better ...
 {
-	size_t n = sizeof(_OffsetType);
-	char* val = new char[n];
-	T::arget().readTarget(loc_, val, 1);
-	if(T::arget().inStack((_OffsetType)*val)) { // TODO: change criteria
-		return TT_PTR;
-	} else {
-		for(size_t i=0; i<n; ++i) {
+	int n = sizeof(addr_t);
+	const unsigned char* val = init_val_->val();
+	if(len_ == n) {
+		if(T::arget().inStack(*((addr_t*)val))) { // TODO: change criteria
+			return TT_PTR;
+		} 
+	}else {
+		for(int i=0; i<n; ++i) {
 			if(val[i] < 32 && val[i] != 0) {// non displayable character
 				return TT_NUM;
 			}
 		}
 		return TT_STR;
 	}
+	return TT_UNKNOWN;
 }
 
 
 void Tag::loc(addr_t newLoc)
 {
-    fprintf(stderr, "Changed location %lx -> %lx\n",
-            loc_, newLoc);
+	fprintf(stderr, "Changed location %lx -> %lx\n",
+			loc_, newLoc);
 	loc_ = newLoc;
 	for(auto back : tbackw_) {
 		if(back.second->ttype==PTR) {
@@ -126,4 +132,12 @@ void Tag::len(int newLen)
 {
 	len_ = newLen;
 	loc(T::arget().findSpace(len_));
+}
+
+const Val* Tag::val(addr_t rip) const 
+{
+	auto it = rip_access_.lower_bound(rip);
+	if(it!=rip_access_.end())
+		return it->second->val();
+	return init_val_;
 }

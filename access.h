@@ -19,7 +19,7 @@ class InvalidMem : public std::exception
 class Access
 {
 	public:
-		Access(addr_t rip, addr_t loc);
+		Access(addr_t rip, addr_t loc, int len=0);
 		~Access();
 
 		addr_t rip() const {return rip_;}

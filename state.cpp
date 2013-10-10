@@ -55,7 +55,7 @@ bool State::operator==(const State& rhs) const
 {
 	char *ptrReg = (char*)&regs_;
 	char *rhsPtrReg = (char*)&rhs.regs_;
-	for(int i=0; i<sizeof(struct user_regs_struct); ++i)
+	for(size_t i=0; i<sizeof(struct user_regs_struct); ++i)
 		if(ptrReg[i]!=rhsPtrReg[i])
 			return false;
 	return stackstate_==rhs.stackstate_;

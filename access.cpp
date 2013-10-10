@@ -2,14 +2,18 @@
 #include "target.h"
 #include "distorm.h"
 
-Access::Access(addr_t rip, addr_t loc) :
-	rip_(rip), loc_(loc)
+Access::Access(addr_t rip, addr_t loc, int len) :
+	rip_(rip), loc_(loc), len_(len)
 {
 	if(!T::arget().inStack(loc_))
 		throw InvalidMem();
 	reg_ = -1;
-	len_ = -1;
 	val_ = NULL;
+	atype_ = IDK;
+	if(len_!=0) {
+		val_ = new Val(loc_, len_);
+		return;
+	}
 	const _DInst* inst = T::arget().getI(rip_);
 	if(META_GET_FC(inst->meta) == FC_CALL) {
 		//fprintf(stderr, "Unknown instruction at %lx\n", rip);
