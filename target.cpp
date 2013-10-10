@@ -173,6 +173,7 @@ int T::init(char** argv)
 			*inst = result[i];
 			rip_i_.insert(std::pair<addr_t, _DInst*>(
 						inst->addr, inst));
+			//fprintf(stderr, "%lx\n", inst->addr);
 			//_DecodedInst di;
 			//distorm_format(&ci, inst, &di);
 			//printf("%lx: %s %s\n", inst->addr, di.mnemonic.p, di.operands.p);

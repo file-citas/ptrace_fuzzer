@@ -37,7 +37,7 @@ class T
 
 		// getter
 		pid_t pid() const { return pid_;}
-		const Elf* elf() const { return elf_;}
+		Elf* elf() { return elf_;}
 		Break* bp() { return bp_;}
 		const _DInst* getI(addr_t rip) const;
 		const _CodeInfo* getCi() const;

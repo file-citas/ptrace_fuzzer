@@ -23,7 +23,7 @@ public:
     addr_t getSelRipTo() const;
 
 signals:
-    void selectionChanged(const addr_t& from, const addr_t& to);
+    void selectionChanged(addr_t from,  addr_t to);
     
 public slots:
 

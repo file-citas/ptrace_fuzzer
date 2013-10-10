@@ -24,16 +24,21 @@ Tracer::Tracer(int argc, char** argv) :
 	// find argv
 	struct user_regs_struct regs;
 	T::arget().safe_ptrace(PTRACE_GETREGS, 0, &regs);
+	//Tag* tag_argv_base = new Tag(regs.rax, sizeof(addr_t), TT_PTR);
+	//addTag(tag_argv_base);
+	addr_t main = T::arget().elf()->get_func((char*)"main");
 	for(int i=0; i<argc; ++i) {
 		addr_t a = regs.rsi + i*sizeof(addr_t);
 		addr_t aDst = 0;
 		int len = strlen(argv[i])+1;
-		Tag* src = new Tag(a, sizeof(addr_t));
+		Tag* src = new Tag(a, sizeof(addr_t), main, TT_PTR);
 		T::arget().readTarget(a, (void*)&aDst, sizeof(addr_t));
-		Tag* dst = new Tag(aDst, len);
+		Tag* dst = new Tag(aDst, len, main, TT_STR);
 		char tmp[16];
 		T::arget().readTarget(aDst, (void*)&tmp, sizeof(addr_t));
 
+		//tag_argv_base->addTraceF(0, src, PTR);
+		//src->addTraceB(0, tag_argv_base, PTR);
 		src->addTraceF(0, dst, PTR);
 		dst->addTraceB(0, src, PTR);
 
@@ -104,20 +109,6 @@ int Tracer::trace()
 	}
 
 
-	//T::arget().safe_ptrace(PTRACE_GETREGS, 0, &regs);
-	//try{
-	//	const _DInst* inst = T::arget().getI(regs.rip);
-	//	const _DInst* inst2 = T::arget().getI(regs.rip+inst->size);
-	//	if(inst2->opcode == 0xc9){
-	//		fprintf(stderr, "DONE");
-	//		T::arget().protect_stack(PROT_READ|PROT_WRITE);
-	//		//T::arget().safe_ptrace(PTRACE_CONT, 0, NULL);
-	//		return 0; // we are done
-	//	}
-	//} catch(...) {
-	//	fprintf(stderr, "%lx\n",regs.rip);
-	//}
-	// handle signal
 	last_ = regs.rip;
 	switch(si.si_signo) {
 		case SIGTRAP:
@@ -175,6 +166,7 @@ int Tracer::handle_cjmp()
 				size_t len = fmin((*tag)->lastAccess()->len(),inst->ops[0].size);
 				Val* val = new Val((unsigned char*)&inst->imm.sqword, len);
 				Cond* c = new Cond((*tag), val);
+				// TODO
 				// until ??
 				// add condition to branch
 				b->addCond(c);
@@ -210,7 +202,9 @@ int Tracer::handle_segv(addr_t loc, addr_t rip)
 							const Access* ta = (*ltag)->lastAccess();
 							if(ta == NULL) continue;
 							if(ta->atype()==READ && // read<->write
-									a->reg() == ta->reg()) {
+									a->reg() == ta->reg() &&
+									a->val()->cmp(*ta->val())) {
+								t->type((*ltag)->type());
 								t->addTraceB(rip, *ltag, CPY);
 								(*ltag)->addTraceF(rip, t, CPY);
 							}

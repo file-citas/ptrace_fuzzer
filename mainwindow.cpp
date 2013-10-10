@@ -40,9 +40,9 @@ MainWindow::MainWindow(Fuzzer* t, QWidget *parent) :
 			codemodel,
 			SLOT(selectionChangedSlot(const QItemSelection &, const QItemSelection &)));
 	connect(codemodel,
-			SIGNAL(selectionChanged(const addr_t& , const addr_t& )),
+			SIGNAL(selectionChanged( addr_t ,  addr_t )),
 			tagmodel,
-			SLOT(CodeSelectionChangedSlot(const addr_t& , const addr_t& )));
+			SLOT(CodeSelectionChangedSlot( addr_t , addr_t )));
 
 	// Create tableview for Value Ranges
 	vrangemodel = new VRangeModel();
@@ -58,27 +58,24 @@ MainWindow::MainWindow(Fuzzer* t, QWidget *parent) :
 	rDelegate = new RDel(this);
 	ui->vrangeTableView->setItemDelegateForColumn(3,rDelegate);
 
-	//std::string buf;
-	//while(T::arget().read_from_child(buf)) {
-	//	if(buf.empty() == false) {
-	//		ui->textBrowser->append(buf.c_str());
-	//	}
-	//	buf.clear();
+	std::string buf;
+	T::arget().read_from_child(buf);
+	buf.clear();
 	//}
-	QThread* thread = new QThread;
-	OutputThread* worker = new OutputThread();
-	worker->moveToThread(thread);
-	connect(worker, SIGNAL(text_signal(QString)), this, SLOT(text_slot(QString)));
-	connect(worker, SIGNAL(error(QString)), this, SLOT(error(QString)));
-	connect(thread, SIGNAL(started()), worker, SLOT(process()));
-	connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
-	connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
-	connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-	thread->start();
+	//QThread* thread = new QThread;
+	//OutputThread* worker = new OutputThread();
+	//worker->moveToThread(thread);
+	//connect(worker, SIGNAL(text_signal(QString)), this, SLOT(text_slot(QString)));
+	//connect(worker, SIGNAL(error(QString)), this, SLOT(error(QString)));
+	//connect(thread, SIGNAL(started()), worker, SLOT(process()));
+	//connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
+	//connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
+	//connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+	//thread->start();
 	// textbrowser ...
 	//ui->textBrowser->setText("Select Code Section and Variables to start Fuzzing ...");
 	//ui->pushButton->setEnabled(false);
-}
+	}
 
 MainWindow::~MainWindow()
 {
@@ -90,8 +87,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::startFuzz()
 {
-    ui->textBrowserTarget->clear();
-    ui->textBrowser->clear();
 	// get selected code section
 	addr_t from = codemodel->getSelRipFrom();
 	addr_t to = codemodel->getSelRipTo();
@@ -109,6 +104,8 @@ void MainWindow::startFuzz()
 
 
 	if(from>to) std::swap(from, to);
+
+	ui->textBrowser->clear();
 	ui->textBrowser->setText(
 			QString("Starting Fuzz from %1 to %2").arg(
 				from, 8, 16, QChar('0')).arg(to, 8, 16, QChar('0')));
@@ -118,6 +115,7 @@ void MainWindow::startFuzz()
 	T::arget().safe_ptrace(PTRACE_GETREGS, 0, &regs);
 	State state(regs, Memstate(0,0), 
 			Memstate(T::arget().sstart(), T::arget().sstart()+2048));
+	ui->textBrowserTarget->clear();
 	for( auto value : vrange ) {
 		do {
 			//Val test(value->tag()->loc(),value->tag()->len());
@@ -127,8 +125,16 @@ void MainWindow::startFuzz()
 					QString("Starting target with %1 = %2 ... ").arg(
 						value->tag()->loc(), 8, 16, QChar('0')).arg(
 						value->str()));
+			std::string buf;
+			T::arget().read_from_child(buf);
+			buf.clear();
 			T::arget().runTo(to);
+			T::arget().read_from_child(buf);
+			ui->textBrowserTarget->append(buf.c_str());
+			ui->textBrowserTarget->append("--------------------------");
+			buf.clear();
 			ui->textBrowser->append("Done");
+			ui->textBrowser->append("--------------------------");
 			state.restore();
 		}while (value->next());
 	}

@@ -24,12 +24,14 @@ public:
     ~tagitem();
     Tag* tag() {return tag_;}
     const QColor* color() const { return color_;}
+    const QColor* fgcolor() const { return fgcolor_;}
     void highlight() {highlight_ =true; color_->setHsv(hue_, 128, 255);}
     void lowlight() {highlight_ =false; color_->setHsv(hue_, 32, 255);}
     const QModelIndexList& indices() const { return indices_;}
 private:
     Tag* tag_;
     QColor* color_;
+    QColor* fgcolor_;
     QModelIndexList indices_;
     double hue_;
     bool highlight_;
@@ -56,10 +58,11 @@ public slots:
     void doubleClicked_slot(QModelIndex);
     void selectionChangedSlot(const QItemSelection &newSelection,
                               const QItemSelection &oldSelection);
-    void CodeSelectionChangedSlot(const addr_t& , const addr_t&);
+    void CodeSelectionChangedSlot( addr_t , addr_t);
 
 
 private:
+    addr_t rip_;
     std::map<Tag*, tagitem*> tagToTagitem_;
     std::map<int, tagitem*, greater> indexToTagitem_;
     int size_;
