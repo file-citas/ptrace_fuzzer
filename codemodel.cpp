@@ -1,6 +1,7 @@
 #include "codemodel.h"
 #include <stdio.h>
 #include <QDebug>
+#include "target.h"
 
 CodeModel::CodeModel(
         const std::map<addr_t, _DInst*>& code,
@@ -16,6 +17,7 @@ CodeModel::CodeModel(
         _DecodedInst di;
         distorm_format(ci_, inst, &di);
         strCode_.push_back(QString("%1 %2").arg((char*)di.mnemonic.p, (char*)di.operands.p));
+	strFunc_.push_back(T::arget().elf()->get_func(inst->addr));
         color_.push_back(QColor(Qt::white));
     }
 }
@@ -29,7 +31,7 @@ int CodeModel::rowCount(const QModelIndex &parent) const
 int CodeModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    return 2;
+    return 3;
 }
 
 QVariant CodeModel::data(const QModelIndex &index, int role) const
@@ -43,7 +45,9 @@ QVariant CodeModel::data(const QModelIndex &index, int role) const
             return QString("%1").arg(code_[row]->addr,6,16, QChar('0'));
         }else if(col==0) {
             return strCode_[row];
-        }
+        } else if(col==2) {
+		return strFunc_[row];
+	}
         break;
     }
     case Qt::BackgroundRole:

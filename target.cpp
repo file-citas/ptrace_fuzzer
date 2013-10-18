@@ -126,8 +126,11 @@ int T::init(char** argv)
 		initial_state_ = new State(regs, Memstate(0,0), Memstate(stack_start_, stack_start_+2048));
 		//code_start_ = elf_->get_func((char*)"_start");
 		// TODO: allgemein richtig?
-		code_start_ = elf_->get_func((char*)"frame_dummy") + 0x2c;
-		code_stop_ = elf_->get_func((char*)"__libc_csu_init");
+		//code_start_ = elf_->get_func((char*)"frame_dummy") + 0x2c;
+		//code_stop_ = elf_->get_func((char*)"__libc_csu_init");
+		code_start_ = elf_->code_min();
+		code_stop_ = elf_->code_max();
+		fprintf(stderr, "Code Section: %lx - %lx\n", code_start_, code_stop_);
 
 		syscall_addr_ = elf_->get_func((char*)"_start");
 		//char* mp = (char*)&mprotect_syscall+4;

@@ -34,6 +34,7 @@ public slots:
 private:
     std::vector<_DInst*> code_;
     std::vector<QString> strCode_;
+    std::vector<QString> strFunc_;
     std::vector<QColor> color_;
     std::map<addr_t, _DInst*> codeToRip_;
     QItemSelection currentSelection;
