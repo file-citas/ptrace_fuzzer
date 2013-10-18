@@ -11,12 +11,6 @@
 #include <set>
 #include "tag.h"
 
-class greater {
-public:
-    bool operator()(const int& x,const int& y) const {
-        return (x-y)>0; }
-};
-
 class tagitem
 {
 public:
@@ -64,7 +58,7 @@ public slots:
 private:
     addr_t rip_;
     std::map<Tag*, tagitem*> tagToTagitem_;
-    std::map<int, tagitem*, greater> indexToTagitem_;
+    std::map<int, tagitem*, std::greater<int>> indexToTagitem_;
     int size_;
     QItemSelection currentSelection_;
 };

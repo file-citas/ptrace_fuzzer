@@ -46,7 +46,7 @@ QVariant TagModel::data(const QModelIndex &index, int role) const
 {
 	int row = index.row();
 	int col = index.column();
-	std::map<int,tagitem*, greater>::const_iterator it =
+	std::map<int,tagitem*, std::greater<int>>::const_iterator it =
 		indexToTagitem_.lower_bound(row);
 	if(it==indexToTagitem_.end()) return QVariant();
 	switch(role) {
@@ -115,7 +115,7 @@ void TagModel::selectionChangedSlot(const QItemSelection &newSelection,
 	currentSelection_.merge(oldSelection, QItemSelectionModel::Deselect);
 	currentSelection_.merge(newSelection, QItemSelectionModel::Select);
 
-	std::map<int,tagitem*, greater>::const_iterator kt = indexToTagitem_.begin();
+	std::map<int,tagitem*, std::greater<int>>::const_iterator kt = indexToTagitem_.begin();
 	for( ; kt!=indexToTagitem_.end(); ++kt)
 		kt->second->lowlight();
 	emit dataChanged(createIndex(0, 0, 0),
@@ -125,7 +125,7 @@ void TagModel::selectionChangedSlot(const QItemSelection &newSelection,
 
 	QModelIndex index = currentSelection_.indexes()[0];
 	int row = index.row();
-	std::map<int,tagitem*, greater>::const_iterator it =
+	std::map<int,tagitem*, std::greater<int>>::const_iterator it =
 		indexToTagitem_.lower_bound(row);
 	if(it==indexToTagitem_.end()) return;
 	it->second->highlight();
@@ -161,7 +161,7 @@ void TagModel::selectionChangedSlot(const QItemSelection &newSelection,
 
 void TagModel::CodeSelectionChangedSlot( addr_t start, addr_t stop)
 {
-	std::map<int,tagitem*, greater>::const_iterator kt = indexToTagitem_.begin();
+	std::map<int,tagitem*, std::greater<int>>::const_iterator kt = indexToTagitem_.begin();
 	for( ; kt!=indexToTagitem_.end(); ++kt)
 		kt->second->lowlight();
 	emit dataChanged(createIndex(0, 0, 0),
@@ -182,7 +182,7 @@ void TagModel::CodeSelectionChangedSlot( addr_t start, addr_t stop)
 void TagModel::doubleClicked_slot(QModelIndex index)
 {
 	int row = index.row();
-	std::map<int,tagitem*, greater>::const_iterator it =
+	std::map<int,tagitem*, std::greater<int>>::const_iterator it =
 		indexToTagitem_.lower_bound(row);
 	if(it==indexToTagitem_.end()) return;
 	Tag* tag = it->second->tag();
