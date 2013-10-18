@@ -61,10 +61,10 @@ addr_t IncStrLen::inc(Val* val, unsigned char maxByte)
         vLen = maxByte;
     }
     int currentByte = strlen((char*)val->val());
-    if(currentByte >= vLen-1) return 1;
     val->val()[currentByte] = 'a';
     val->val()[currentByte+1] = 0;
     val->mkStr();
+    if(currentByte >= vLen-2) return 1;
     return newLoc;
 }
 

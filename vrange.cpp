@@ -12,6 +12,7 @@ VRange::VRange(Tag* tag, Val* from_val, Val* to_val) :
 	to_->len(len_);
 	if(tag_->len() < len_)
 		tag_->len(len_);
+	orig_from_ = new Val(from_->val(), from_->len());
 	inc_ = new IncSkip(to_->val(), to_->len());
 	//unsigned char step = 1;
 	//inc_ = new IncNum(&step, 1);
@@ -96,4 +97,9 @@ void VRange::inc(Inc* inc)
 		}
 	}
 	inc_ = inc;
+}
+void VRange::resetFrom() const
+{
+	delete from_;
+	from_ = orig_from_;
 }

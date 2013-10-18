@@ -57,6 +57,7 @@ int Tag::len() const
 
 int Tag::log(addr_t rip, addr_t loc)
 {
+	//const Access* last = lastAccess();
 	Access* a = new Access(rip, loc);
 	addAccess(a);
 	return 1;
@@ -127,6 +128,7 @@ void Tag::loc(addr_t newLoc)
 			fprintf(stderr, "Updated Tag at %lx\n", back.second->tag->loc());
 		}
 	}
+	//}
 }
 void Tag::len(int newLen)
 {
@@ -140,4 +142,19 @@ const Val* Tag::val(addr_t rip) const
 	if(it!=rip_access_.end())
 		return it->second->val();
 	return init_val_;
+}
+
+const Trace* Tag::tforw(addr_t rip) const
+{
+	auto it = tforw_.lower_bound(rip);
+	if(it!=tforw_.end())
+		return it->second;
+	return NULL;
+}
+const Trace* Tag::tbackw(addr_t rip) const
+{
+	auto it = tbackw_.lower_bound(rip);
+	if(it!=tbackw_.end())
+		return it->second;
+	return NULL;
 }

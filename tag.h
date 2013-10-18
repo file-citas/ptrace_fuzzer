@@ -34,12 +34,8 @@ class Tag
 		int addTraceF(addr_t rip, Tag* t, TTYPE type);
 		int addTraceB(addr_t rip, Tag* t, TTYPE type);
 
-		const std::map<addr_t, Trace*>& tforw() const {
-			return tforw_;
-		}
-        const std::map<addr_t, Trace*>& tbackw() const {
-            return tbackw_;
-        }
+		const Trace* tforw(addr_t rip) const;
+		const Trace* tbackw(addr_t rip) const;
 
 	private:
 		TAGTYPE guessType(); // guess what type the tagged memory is
@@ -47,8 +43,8 @@ class Tag
 		std::vector<Access*> access_;
 		std::map<addr_t, Access*> rip_access_;
 
-		std::map<addr_t, Trace*> tforw_;
-		std::map<addr_t, Trace*> tbackw_;
+		std::map<addr_t, Trace*, std::greater<addr_t>> tforw_;
+		std::map<addr_t, Trace*, std::greater<addr_t>> tbackw_;
 
 		addr_t loc_;
 		int len_;

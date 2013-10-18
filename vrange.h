@@ -22,10 +22,12 @@ class VRange
 		void from(Val* from);
 		void to(Val* from);
 		const char* str() const {return current_->str();}
+		void resetFrom() const;
 
 	private:
 		Tag* tag_;
-		Val* from_;
+		mutable Val* from_;
+		Val* orig_from_;
 		Val* to_;
 		Inc* inc_;
 		int len_;

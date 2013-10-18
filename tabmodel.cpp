@@ -59,7 +59,7 @@ QVariant TagModel::data(const QModelIndex &index, int role) const
 							8 , 16, QChar('0')).toUpper();
 				} else {
 					//const unsigned char* c =
-						//it->second->tag()->init_val()->val();
+					//it->second->tag()->init_val()->val();
 					const Val* v = it->second->tag()->val(rip_);
 					//if(!c) return QString("0");
 					const unsigned char* c =
@@ -130,18 +130,33 @@ void TagModel::selectionChangedSlot(const QItemSelection &newSelection,
 	if(it==indexToTagitem_.end()) return;
 	it->second->highlight();
 	const Tag* tag = it->second->tag();
-	for(auto trace : tag->tforw()) {
-		tagitem* item = tagToTagitem_.find(trace.second->tag)->second;
+	const Trace* tforw = tag->tforw(rip_);
+	if(tforw){
+		tagitem* item = tagToTagitem_.find(tforw->tag)->second;
 		item->highlight();
 		emit dataChanged(createIndex(item->indices().first().row(), 0, 0),
 				createIndex(item->indices().last().row(), columnCount(), 0));
 	}
-	for(auto trace : tag->tbackw()) {
-		tagitem* item = tagToTagitem_.find(trace.second->tag)->second;
+	const Trace* tbackw = tag->tbackw(rip_);
+	if(tbackw){
+		tagitem* item = tagToTagitem_.find(tbackw->tag)->second;
 		item->highlight();
 		emit dataChanged(createIndex(item->indices().first().row(), 0, 0),
 				createIndex(item->indices().last().row(), columnCount(), 0));
 	}
+
+	//for(auto trace : tag->tforw()) {
+	//	tagitem* item = tagToTagitem_.find(trace.second->tag)->second;
+	//	item->highlight();
+	//	emit dataChanged(createIndex(item->indices().first().row(), 0, 0),
+	//			createIndex(item->indices().last().row(), columnCount(), 0));
+	//}
+	//for(auto trace : tag->tbackw()) {
+	//	tagitem* item = tagToTagitem_.find(trace.second->tag)->second;
+	//	item->highlight();
+	//	emit dataChanged(createIndex(item->indices().first().row(), 0, 0),
+	//			createIndex(item->indices().last().row(), columnCount(), 0));
+	//}
 }
 
 void TagModel::CodeSelectionChangedSlot( addr_t start, addr_t stop)

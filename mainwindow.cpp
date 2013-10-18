@@ -137,6 +137,7 @@ void MainWindow::startFuzz()
 			ui->textBrowser->append("--------------------------");
 			state.restore();
 		}while (value->next());
+		value->resetFrom();
 	}
 	//fuzzer->fuzz(from, to, vrange);
 }
