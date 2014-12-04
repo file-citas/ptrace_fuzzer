@@ -11,25 +11,36 @@
 #include <sys/user.h>
 #include <sys/mman.h>
 #include <math.h>
+#include <limits>
+#include <QxtLogger>
+#include <QString>
 
-Tracer::Tracer(int argc, char** argv)
+Tracer::Tracer(int argc, char** argv) :
+	heap_min_(std::numeric_limits<addr_t>::max()),
+	heap_max_(0),
+	stack_min_(std::numeric_limits<addr_t>::max()),
+	stack_max_(0)
 {
 	// prep target
 	T::arget().init(argv);
 	// find argv
 	struct user_regs_struct regs;
 	T::arget().safe_ptrace(PTRACE_GETREGS, 0, &regs);
+	//Tag* tag_argv_base = new Tag(regs.rax, sizeof(addr_t), TT_PTR);
+	//addTag(tag_argv_base);
+	addr_t main = T::arget().elf()->get_func((char*)"main");
 	for(int i=0; i<argc; ++i) {
 		addr_t a = regs.rsi + i*sizeof(addr_t);
 		addr_t aDst = 0;
-        int len = strlen(argv[i])+1;
-		Tag* src = new Tag(a, sizeof(addr_t));
-		T::arget().read(a, (void*)&aDst, sizeof(addr_t));
-        Tag* dst = new Tag(aDst, len);
-        char tmp[16];
-        T::arget().read(aDst, (void*)&tmp, sizeof(addr_t));
-        fprintf(stderr, "%c\n", tmp[0]);
+		int len = strlen(argv[i])+1;
+		Tag* src = new Tag(a, sizeof(addr_t), main, TT_PTR);
+		T::arget().readTarget(a, (void*)&aDst, sizeof(addr_t));
+		Tag* dst = new Tag(aDst, len, main, TT_STR);
+		char tmp[16];
+		T::arget().readTarget(aDst, (void*)&tmp, sizeof(addr_t));
 
+		//tag_argv_base->addTraceF(0, src, PTR);
+		//src->addTraceB(0, tag_argv_base, PTR);
 		src->addTraceF(0, dst, PTR);
 		dst->addTraceB(0, src, PTR);
 
@@ -38,7 +49,10 @@ Tracer::Tracer(int argc, char** argv)
 	}
 	// protect stack so we get a segfault on access
 	T::arget().protect_stack(PROT_NONE);
+
+	qxtLog->info("Tracer created");
 }
+
 Tracer::~Tracer()
 {
 	std::set<Tag*>::iterator it =tags_.begin();
@@ -52,6 +66,7 @@ Tracer::~Tracer()
 
 int Tracer::trace()
 {
+
 	// continue target
 	T::arget().safe_ptrace(PTRACE_CONT, 0, NULL);
 	int status;
@@ -64,15 +79,18 @@ int Tracer::trace()
 	}
 
 	// assume WIFSTOPPED
+	//
+	//
 	struct user_regs_struct regs;
 	T::arget().safe_ptrace(PTRACE_GETREGS, 0, &regs);
 	siginfo_t si;
 	T::arget().safe_ptrace(PTRACE_GETSIGINFO, 0 , &si); 
 
-	//printf("%lx\n", regs.rip);
-	if(regs.rip==0 ){//|| regs.rip==T::arget().cstop()) {
+	qxtLog->debug("Tracing rip: ", QString::number(regs.rip, 16));
+	if(regs.rip==0){
+		fprintf(stderr, "DONE");
 		T::arget().protect_stack(PROT_READ|PROT_WRITE);
-		T::arget().safe_ptrace(PTRACE_CONT, 0, NULL);
+		//T::arget().safe_ptrace(PTRACE_CONT, 0, NULL);
 		return 0; // we are done
 	}
 
@@ -81,10 +99,21 @@ int Tracer::trace()
 
 	// if the next instruction is not in our area we break on return
 	if(!T::arget().inCode(regs.rip)) {
-		fprintf(stderr, "%lx not in code\n", regs.rip);
+
+		qxtLog->debug("Is not in Code section");
+
 		addr_t returnadr = T::arget().safe_ptrace(PTRACE_PEEKTEXT, 
 				regs.rsp, NULL);
-		if(returnadr==0) return 0;
+
+		qxtLog->debug("return address: ", QString::number(returnadr, 16));
+
+		if(!T::arget().inCode(returnadr)) {
+		//if(returnadr==0)  {
+			qxtLog->critical("Return address is not in code");
+			//fprintf(stderr, "DONE");
+			//T::arget().protect_stack(PROT_READ|PROT_WRITE);
+			return 0;
+		}
 		T::arget().bp()->set(returnadr);
 		T::arget().safe_ptrace(PTRACE_CONT, 0, NULL);
 
@@ -92,20 +121,28 @@ int Tracer::trace()
 		waitpid(T::arget().pid(), &status, 0);
 		T::arget().bp()->unset(returnadr);
 
+		qxtLog->debug("Target returned to code section");
+
 		T::arget().protect_stack(PROT_NONE);
 		return 1;
 	}
 
-	// handle signal
+
+	last_ = regs.rip;
 	switch(si.si_signo) {
+		// breakpoint
 		case SIGTRAP:
+			qxtLog->debug("Got SIGTRAP");
 			handle_cjmp();
 			break;
+		// mem access
 		case SIGSEGV:
+			qxtLog->debug("Got SIGSEGV");
 			handle_segv((addr_t)si.si_addr, regs.rip);
 			break;
 		default:
-			fprintf(stderr, "Unknown Signal %d\n", si.si_signo);
+			qxtLog->critical("Got unknown Signal: ", si.si_signo);
+			//fprintf(stderr, "Unknown Signal %d\n", si.si_signo);
 			return 0; // done
 	}
 
@@ -123,8 +160,6 @@ int Tracer::handle_cjmp()
 	addr_t rip = regs.rip-0x1; // -0x1 because 'int $0x3' has already been executed
 	T::arget().bp()->unset(rip);
 
-	fprintf(stderr, "cjmp at %lx\n", regs.rip);
-
 	// create branch instance
 	const _DInst* ijmp = T::arget().getI(rip);
 	addr_t to = 0;
@@ -135,7 +170,7 @@ int Tracer::handle_cjmp()
 	Branch* b = new Branch(rip, to);
 	if(!addBranch(b))
 		return 0;
-	
+
 	// iterate over last accessed tags
 	std::vector<Tag*>::reverse_iterator tag = last_tag_.rbegin();
 	for(; tag!=last_tag_.rend(); ++tag) {
@@ -147,18 +182,15 @@ int Tracer::handle_cjmp()
 			const _DInst* inst = T::arget().getI(lastRip+off);
 			// compared accessed flags
 			if(inst->modifiedFlagsMask & ijmp->testedFlagsMask) {
-				fprintf(stderr, "Set in %lx\n", lastRip+off);
 				if(inst->ops[0].type == O_IMM || inst->ops[1].type == O_IMM) {
-					fprintf(stderr, "value %lx\n", inst->imm.sqword);
 					regs.rip = rip;
 					T::arget().safe_ptrace(PTRACE_SETREGS, 0, &regs);
 					return 1;
 				}
-				else 
-					fprintf(stderr, "No immediate operands\n");
 				size_t len = fmin((*tag)->lastAccess()->len(),inst->ops[0].size);
 				Val* val = new Val((unsigned char*)&inst->imm.sqword, len);
 				Cond* c = new Cond((*tag), val);
+				// TODO
 				// until ??
 				// add condition to branch
 				b->addCond(c);
@@ -194,16 +226,17 @@ int Tracer::handle_segv(addr_t loc, addr_t rip)
 							const Access* ta = (*ltag)->lastAccess();
 							if(ta == NULL) continue;
 							if(ta->atype()==READ && // read<->write
-									a->reg() == ta->reg()) {
+									a->reg() == ta->reg() &&
+									a->val()->cmp(*ta->val())) {
+								t->type((*ltag)->type());
 								t->addTraceB(rip, *ltag, CPY);
-                                (*ltag)->addTraceF(rip, t, CPY);
+								(*ltag)->addTraceF(rip, t, CPY);
 							}
 						}
 					}
 					break;
 				default:
 					delete t;
-					fprintf(stderr, "NO TYPE\n");
 			}
 		} catch (...) {
 			return 0;
@@ -220,6 +253,8 @@ int Tracer::addTag(Tag* t)
 		delete t;
 		return 0;
 	}
+	stack_min_ = fmin(stack_min_, t->loc());
+	stack_max_ = fmax(stack_max_, t->loc() + t->len());
 	for(int i=0; i<t->len(); ++i)
 		mem_tags_.insert(std::pair<addr_t, Tag*>(t->loc()+i, t));
 	if(t->lastAccess()!=NULL)

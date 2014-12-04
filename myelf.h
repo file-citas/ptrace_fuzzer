@@ -24,11 +24,6 @@ struct classcomp {
 	    {return strcmp(lhs,rhs)<0;}
 };
 
-struct classcompAdr {
-	  bool operator() (addr_t lhs, addr_t rhs) const
-	    {return lhs<rhs;}
-};
-
 class Elf {
 	public:
 		Elf(char* fname);
@@ -36,13 +31,18 @@ class Elf {
 
 		int init();
 
-		addr_t get_func(char* name);
-		char* get_func(addr_t ip);
+		addr_t get_func(char* name) const;
+		const char* get_func(addr_t ip) const;
 
 		void print_func();
+		addr_t code_min() const { return code_min_;};
+		addr_t code_max() const { return code_max_;};
 		
 	private:
 		std::map<char*, addr_t, classcomp> func_;
+		std::map<addr_t, char*, std::greater<addr_t>> funcA_;
+		addr_t code_min_;
+		addr_t code_max_;
 
 };
 #endif

@@ -5,8 +5,12 @@
 #include "break.h"
 #include "distorm.h"
 #include <map>
+#include <string>
 
 typedef addr_t _OffsetType;
+
+class State;
+class Memstate;
 
 class InvalidRIP : public std::exception
 {
@@ -33,11 +37,14 @@ class T
 
 		// getter
 		pid_t pid() const { return pid_;}
-		const Elf* elf() const { return elf_;}
+		Elf* elf() { return elf_;}
 		Break* bp() { return bp_;}
 		const _DInst* getI(addr_t rip) const;
 		const _CodeInfo* getCi() const;
-        addr_t cstop() const {return code_stop_;}
+		const std::map<addr_t, _DInst*>& getCode() const { return rip_i_;}
+		addr_t cstop() const {return code_stop_;}
+		addr_t sstart() const {return stack_start_;}
+		//int fd() const { return fd_;}
 
 		// helper
 		bool inCode(addr_t loc) const;
@@ -52,7 +59,19 @@ class T
 		// set protection flags for stack segment
 		int protect_stack(int prot);
 		// read from target process
-		int read(addr_t loc, void* val, size_t len) const;
+		int readTarget(addr_t loc, void* val, size_t len) const;
+		// write to target process
+		int writeTarget(addr_t loc, void* val, size_t len) const;
+
+		// reset target to original state
+		void reset();
+		// run programm unitl rip is reached
+		void runTo(addr_t rip);
+
+		// find len bytes of free memory 
+		addr_t findSpace(int len);
+
+		bool read_from_child(std::string& buff);
 
 	private:
 		T() : init_(false), pid_(0) {};
@@ -61,8 +80,6 @@ class T
 
 		// get stack segment from /proc/*/maps
 		int getStackSegment(addr_t& sstart, addr_t& sstop);
-		// write to target process
-		int write(addr_t loc, void* val, size_t len) const;
 		// protect arbitrary memory reagion
 		int protect(addr_t from, addr_t to, int prot);
 
@@ -85,6 +102,11 @@ class T
 
 		_CodeInfo ci_;
 		std::map<addr_t, _DInst*> rip_i_;
+		State* initial_state_;
+		addr_t used_;
+		int fd_;
+		int read_handle_;
+
 };
 
 #endif

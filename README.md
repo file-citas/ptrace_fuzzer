@@ -15,3 +15,10 @@ Dependencies
 
 * libelf
 * libdistorm3
+
+Usage
+-----
+
+```
+./bfuzz a.out a b c 
+```

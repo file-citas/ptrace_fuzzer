@@ -12,13 +12,21 @@ class Val
 		~Val();
 
 		int len() const {return len_;}
+		void len(int newLen);
 		const unsigned char* val() const {return val_;}
+		unsigned char* val() {return val_;}
+		void val(unsigned char* newVal, int newLen);
+		bool isTerminated() const { return val_[len_-1]==0; }
+		void terminate() {
+			len(len_+1);
+			val_[len_-1] = 0;
+		}
 
-		bool cmp(Val& val);
+		bool cmp(const Val& val) const;
 		const char* str() const {return str_;}
-	
-	private:
 		int mkStr();
+
+	private:
 		unsigned char* val_;
 		int len_;
 		char* str_;

@@ -10,7 +10,10 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = bfuzz
 TEMPLATE = app
-LIBS += -lelf -ldistorm3 -lm
+LIBS += -lelf -ldistorm3 -lm  -lutil
+CONFIG += qxt
+QXT += core gui
+QMAKE_CXXFLAGS += -std=c++0x -g
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -23,7 +26,15 @@ SOURCES += main.cpp\
     break.cpp \
     branch.cpp \
     access.cpp \
-    tabmodel.cpp
+    tabmodel.cpp \
+    codemodel.cpp \
+    fuzzer.cpp \
+    state.cpp \
+    vrange.cpp \
+    vrangemodel.cpp \
+    rdel.cpp \
+    inc.cpp \
+    outputthread.cpp
 
 HEADERS  += mainwindow.h \
     val.h \
@@ -40,6 +51,14 @@ HEADERS  += mainwindow.h \
     branch.h \
     access.h \
     myelf.h \
-    tabmodel.h
+    tabmodel.h \
+    codemodel.h \
+    fuzzer.h \
+    state.h \
+    vrange.h \
+    vrangemodel.h \
+    rdel.h \
+    inc.h \
+    outputthread.h
 
 FORMS    += mainwindow.ui

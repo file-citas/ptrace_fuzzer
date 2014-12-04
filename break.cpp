@@ -1,5 +1,7 @@
 #include "break.h"
 #include <stdio.h>
+#include <QxtLogger>
+#include <QString>
 
 Break::~Break()
 {
@@ -14,6 +16,7 @@ int Break::set(addr_t addr) {
 	// add breakpoint to list
 	bp_.insert(std::pair<addr_t, addr_t>(addr, orig));
 	//printf("Set bp at %lx\n", addr);
+	qxtLog->info("breakpoint set at ", QString::number(addr, 16));
 	return bp_.size();
 }
 
@@ -38,6 +41,7 @@ int Break::unset(addr_t addr) {
 	ptrace(PTRACE_POKETEXT, pid_, i->first, i->second);
 	// remove breakpoint from list
 	bp_.erase(i);
+	qxtLog->info("breakpoint unset at ", QString::number(addr, 16));
 	return bp_.size();
 }
 
