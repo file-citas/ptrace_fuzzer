@@ -15,6 +15,7 @@ Dependencies
 
 * libelf
 * libdistorm3
+* libqxt
 
 Usage
 -----
