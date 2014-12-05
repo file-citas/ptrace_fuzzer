@@ -1,6 +1,7 @@
 #include "tracer.h"
 #include "target.h"
 #include "distorm.h"
+#include "easylogging++.h"
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -12,8 +13,7 @@
 #include <sys/mman.h>
 #include <math.h>
 #include <limits>
-#include <QxtLogger>
-#include <QString>
+#include <iomanip>
 
 Tracer::Tracer(int argc, char** argv) :
 	heap_min_(std::numeric_limits<addr_t>::max()),
@@ -50,7 +50,7 @@ Tracer::Tracer(int argc, char** argv) :
 	// protect stack so we get a segfault on access
 	T::arget().protect_stack(PROT_NONE);
 
-	qxtLog->info("Tracer created");
+	LOG(INFO) << "Tracer created";
 }
 
 Tracer::~Tracer()
@@ -86,7 +86,7 @@ int Tracer::trace()
 	siginfo_t si;
 	T::arget().safe_ptrace(PTRACE_GETSIGINFO, 0 , &si); 
 
-	qxtLog->debug("Tracing rip: ", QString::number(regs.rip, 16));
+	LOG(DEBUG) << "Tracing rip: " << std::hex << regs.rip;
 	if(regs.rip==0){
 		fprintf(stderr, "DONE");
 		T::arget().protect_stack(PROT_READ|PROT_WRITE);
@@ -100,16 +100,16 @@ int Tracer::trace()
 	// if the next instruction is not in our area we break on return
 	if(!T::arget().inCode(regs.rip)) {
 
-		qxtLog->debug("Is not in Code section");
+		LOG(DEBUG) << "Is not in Code section";
 
 		addr_t returnadr = T::arget().safe_ptrace(PTRACE_PEEKTEXT, 
 				regs.rsp, NULL);
 
-		qxtLog->debug("return address: ", QString::number(returnadr, 16));
+		LOG(DEBUG) << "return address: " << std::hex << returnadr;
 
 		if(!T::arget().inCode(returnadr)) {
 		//if(returnadr==0)  {
-			qxtLog->critical("Return address is not in code");
+			LOG(INFO) << "Return address is not in code";
 			//fprintf(stderr, "DONE");
 			//T::arget().protect_stack(PROT_READ|PROT_WRITE);
 			return 0;
@@ -121,7 +121,7 @@ int Tracer::trace()
 		waitpid(T::arget().pid(), &status, 0);
 		T::arget().bp()->unset(returnadr);
 
-		qxtLog->debug("Target returned to code section");
+		LOG(DEBUG) << "Target returned to code section";
 
 		T::arget().protect_stack(PROT_NONE);
 		return 1;
@@ -132,16 +132,16 @@ int Tracer::trace()
 	switch(si.si_signo) {
 		// breakpoint
 		case SIGTRAP:
-			qxtLog->debug("Got SIGTRAP");
+			LOG(DEBUG) << "Got SIGTRAP";
 			handle_cjmp();
 			break;
 		// mem access
 		case SIGSEGV:
-			qxtLog->debug("Got SIGSEGV");
+			LOG(DEBUG) << "Got SIGSEGV";
 			handle_segv((addr_t)si.si_addr, regs.rip);
 			break;
 		default:
-			qxtLog->critical("Got unknown Signal: ", si.si_signo);
+			LOG(FATAL) << "Got unknown Signal: " << si.si_signo;
 			//fprintf(stderr, "Unknown Signal %d\n", si.si_signo);
 			return 0; // done
 	}

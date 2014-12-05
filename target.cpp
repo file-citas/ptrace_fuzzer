@@ -2,6 +2,7 @@
 #include "target.h"
 #include "distorm.h"
 #include "state.h"
+#include "easylogging++.h"
 
 #include <pty.h>
 #include <utmp.h>
@@ -21,8 +22,7 @@
 #include <sys/wait.h>
 #include <unistd.h>       /* getpid */
 #include <wait.h>         /* waitpid */
-#include <QxtLogger>
-#include <QString>
+#include <iomanip>
 
 
 #define MAXSTRLEN 256
@@ -60,7 +60,7 @@ int T::init(char** argv)
 {
 	if(init_) return 1;
 
-	qxtLog->info("Initialize Target: ", argv[0]);
+	LOG(INFO) << "Initialize Target: " << argv[0];
 
 	//fd_ = open("fuzz.out", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | O_DIRECT | O_TRUNC | O_NONBLOCK);
 
@@ -68,7 +68,7 @@ int T::init(char** argv)
 	openpty(&master, &slave, NULL, NULL, NULL);
 	pid_ = fork();
 
-	qxtLog->info("Target pid: ", pid_);
+	LOG(INFO) << "Target pid: " << pid_;
 
 	if(pid_ == 0) { // child
 		ptrace(PTRACE_TRACEME, 0, NULL, NULL);
@@ -98,7 +98,7 @@ int T::init(char** argv)
 		bp_ = new Break(T::arget().pid());
 		addr_t main = elf_->get_func((char*)"main");
 
-		qxtLog->info("Address of main function: ", QString::number(main, 16));
+		LOG(INFO) << "Address of main function: " << std::hex << main;
 
 		bp_->set(main);
 		safe_ptrace(PTRACE_CONT, 0, NULL);
@@ -107,7 +107,7 @@ int T::init(char** argv)
 		// lets just hope that we hit our breakpoint ...
 		bp_->unset(main);
 
-		qxtLog->info("Hit main");
+		LOG(INFO) << "Hit main";
 
 		singlestep();
 		singlestep();
@@ -145,13 +145,11 @@ int T::init(char** argv)
 		code_start_ = elf_->code_min();
 		code_stop_ = elf_->code_max();
 
-		qxtLog->info("Code Section: ", QString::number(code_start_, 16), QString::number(code_start_, 16));
+		LOG(INFO) << "Code Section: " << std::hex << code_start_ << " - " << std::hex << code_start_;
 
 		//fprintf(stderr, "Code Section: %lx - %lx\n", code_start_, code_stop_);
 
 		syscall_addr_ = elf_->get_func((char*)"_start");
-
-		qxtLog->info("Address of function _start: ", QString::number(syscall_addr_, 16));
 
 		//char* mp = (char*)&mprotect_syscall+4;
 		unsigned char* mp = mpsyc;
@@ -161,8 +159,8 @@ int T::init(char** argv)
 		writeTarget(syscall_addr_, 
 				(void*)mp, protect_stack_none_len);
 
-		qxtLog->info("_start overwritten, mprotect syscalls placed at: ",
-				 QString::number(syscall_addr_, 16), " + ", QString::number(protect_stack_none_len, 10));
+		LOG(INFO) << "_start overwritten, mprotect syscalls placed at: " << \
+		        std::hex << syscall_addr_ << " + " << protect_stack_none_len;
 
 		const size_t nInst = (code_stop_ - code_start_); // TODO
 		unsigned char my_code_stream[nInst];
@@ -229,8 +227,9 @@ int T::singlestep()
 	waitpid(pid_, &status, 0);
 	if(WIFEXITED(status))
 	{
-		fprintf(stderr, "+%5d+ child exit status %d\n", 
-				pid_, WEXITSTATUS(status));
+		LOG(INFO) << "Child exit status " << WEXITSTATUS(status);
+		//fprintf(stderr, "+%5d+ child exit status %d\n", 
+		//		pid_, WEXITSTATUS(status));
 		exit(0);
 	}
 	siginfo_t si;
@@ -238,7 +237,8 @@ int T::singlestep()
 	struct user_regs_struct regs;
 	safe_ptrace(PTRACE_GETREGS, 0, &regs);
 	if(si.si_signo!=SIGTRAP) {
-		fprintf(stderr, "SI at %lx\n", regs.rip);
+		//fprintf(stderr, "SI at %lx\n", regs.rip);
+		LOG(INFO) << "SI at " << std::hex << regs.rip;
 		char i[16];
 		readTarget(regs.rip, i, 16);
 		for(int j=0; j<8; ++j)

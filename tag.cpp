@@ -1,8 +1,8 @@
 #include "tag.h"
 #include "target.h"
+#include "easylogging++.h"
 #include <stdio.h>
-#include <QxtLogger>
-#include <QString>
+#include <iomanip>
 
 Tag::Tag(addr_t loc, int len, addr_t rip, TAGTYPE type) :
 	loc_(loc), len_(len), type_(type)
@@ -13,7 +13,7 @@ Tag::Tag(addr_t loc, int len, addr_t rip, TAGTYPE type) :
 	if(type == TT_UNKNOWN)
 		type_ = guessType();
 	//fprintf(stderr, "Created Tag at %lx (+%d) type %d\n", loc_, len_, type_);
-	qxtLog->info("Created Tag at ", QString::number(loc_, 16), " (+", len_, ") type ", type_);
+	LOG(INFO) << "Created Tag at " << std::hex << loc_ << " (+" << len_ << ") type " << type_;
 }
 
 Tag::Tag(Access* a, TAGTYPE type) : type_(type),
@@ -25,7 +25,7 @@ Tag::Tag(Access* a, TAGTYPE type) : type_(type),
 	if(type == TT_UNKNOWN)
 		type_ = guessType();
 	//fprintf(stderr, "Created Tag at %lx (+%d) type %d\n", loc_, len_, type_);
-	qxtLog->info("Created Tag at ", QString::number(loc_, 16), " (+", len_, ") type ", type_);
+	LOG(INFO) << "Created Tag at " << std::hex << loc_ << " (+" << len_ << ") type " << type_;
 }
 
 Tag::~Tag()

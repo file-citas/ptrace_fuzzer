@@ -1,17 +1,18 @@
 #include "fuzzer.h"
 #include "state.h"
 #include "target.h"
+#include "easylogging++.h"
 
 #include <algorithm>    // std::swap
 #include <stdio.h>
 #include <unistd.h>
-#include <QxtLogger>
+#include <iomanip>
 
 Fuzzer::Fuzzer(int argc, char** argv)
 {
 	tracer_ = new Tracer(argc, argv);
 	// initial run
-	qtxLog->info("starting initial trace");
+	LOG(INFO) << "starting initial trace";
 	//while(tracer_->trace());
 	while(1) {
 		short r = tracer_->trace();
@@ -20,7 +21,7 @@ Fuzzer::Fuzzer(int argc, char** argv)
 			break;
 		}
 	}
-	qtxLog->info("initial trace finished");
+	LOG(INFO) << "initial trace finished";
 	T::arget().reset();
 	T::arget().runTo(tracer_->last());
 }

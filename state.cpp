@@ -1,7 +1,9 @@
 #include "state.h"
 #include "target.h"
+#include "easylogging++.h"
 #include <stdlib.h>
 #include <assert.h>
+#include <iomanip>
 
 Memstate::Memstate(addr_t from, addr_t to) :
     from_(from), to_(to), data_(NULL)
@@ -48,7 +50,7 @@ void State::restore() const
     T::arget().safe_ptrace(PTRACE_SETREGS, 0, &r);
     T::arget().safe_ptrace(PTRACE_GETREGS, 0, &r);
     if(regs_.rip != r.rip)
-    	fprintf(stderr, "New Rip %lx\n", r.rip);
+        LOG(INFO) << "New Rip: " << std::hex << r.rip;
     //heapstate_.restore();
 }
 bool State::operator==(const State& rhs) const

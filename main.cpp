@@ -1,46 +1,52 @@
-#include <QApplication>
-#include "mainwindow.h"
+//#include <QApplication>
+//#include "mainwindow.h"
 //#include "fuzzer.h"
 //#include "target.h"
 #include "fuzzer.h"
-#include <stdio.h>
-#include <QtCore/QCoreApplication>
-#include <QxtBasicFileLoggerEngine>
-#include <QxtLogger>
+//#include <stdio.h>
+
+#include "easylogging++.h"
+
+_INITIALIZE_EASYLOGGINGPP
 
 
 void setupLogger()
 {
-    QxtBasicFileLoggerEngine *dbg  = new QxtBasicFileLoggerEngine("debug.log");
-    QxtBasicFileLoggerEngine *info = new QxtBasicFileLoggerEngine("info.log");
+	el::Configurations defaultConf;
+	defaultConf.setToDefault();
 
-    // qxtLog takes ownership of dbg - no need to manage its memory
-    qxtLog->addLoggerEngine("dbg", dbg);
-    qxtLog->addLoggerEngine("app", info);
+	defaultConf.setGlobally(
+			el::ConfigurationType::ToStandardOutput, "false");
 
-    qxtLog->disableAllLogLevels();
+	defaultConf.setGlobally(
+			el::ConfigurationType::Format, "%datetime %msg");
+	defaultConf.setGlobally(
+			el::ConfigurationType::Filename, "fuzzer.log");
+	el::Loggers::reconfigureLogger("default", defaultConf);
 
-    qxtLog->enableLogLevels("dbg", QxtLogger::AllLevels);
-    qxtLog->enableLogLevels("app",  QxtLogger::InfoLevel | QxtLogger::WarningLevel | QxtLogger::ErrorLevel | QxtLogger::CriticalLevel | QxtLogger::FatalLevel | QxtLogger::WriteLevel );
+
+	LOG(INFO) << "";
+	LOG(INFO) << "----------------------------------------------------";
+	LOG(INFO) << "----------------------------------------------------";
+	LOG(INFO) << "";
+
+	defaultConf.set(el::Level::Debug, 
+			el::ConfigurationType::Format, "%datetime %func %msg");
+	defaultConf.set(el::Level::Debug, 
+			el::ConfigurationType::Filename, "debug.log");
+
+	el::Loggers::reconfigureLogger("default", defaultConf);
+	LOG(DEBUG) << "";
+	LOG(DEBUG) << "----------------------------------------------------";
+	LOG(DEBUG) << "----------------------------------------------------";
+	LOG(DEBUG) << "";
 }
 
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-
-    setupLogger();
-
-    qxtLog->info("starting fuzzer");
-
-    Fuzzer* fuzzer = new Fuzzer(argc-1, &argv[1]);
-
-    qxtLog->info("fuzzer done");
-
-    MainWindow w(fuzzer);
-
-    qxtLog->info("mainwindow initialized");
-    w.show();
-
-    return a.exec();
+	_START_EASYLOGGINGPP(argc, argv);
+	setupLogger();
+	Fuzzer* fuzzer = new Fuzzer(argc-1, &argv[1]);
+	return 0;
 }

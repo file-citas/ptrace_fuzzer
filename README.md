@@ -1,21 +1,12 @@
 Ptrace Fuzzer
 =============
 
-Build
------
-
-```
-qmake-qt4
-make
-```
-
-
 Dependencies
 ------------
 
 * libelf
-* libdistorm3
-* libqxt
+* libdistorm3: https://code.google.com/p/distorm/source/checkout
+* easyloggingpp: https://github.com/easylogging/easyloggingpp
 
 Usage
 -----
