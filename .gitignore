@@ -1,11 +1,28 @@
-moc_*
-ui_*
-
 *.o
 *.swp
 
-bfuzz
+/Makefile
+/Makefile.in
+/aclocal.m4
+/autom4te.cache/
+/config.*
+/configure
+/m4/
+/stamp-h?
+/configure
+/depcomp
+/install-sh
+/missing
+/stamp-h1
+.deps/
+ltmain.sh
+.dirstamp
+*.o
+*~
+ptrfuzz
 
 a.out
-*.log
+*log*
 tmp
+
+
