@@ -1,6 +1,17 @@
 Ptrace Fuzzer
 =============
 
+
+Build
+-----
+
+```
+autoreconf -i
+./configure
+make
+```
+
+
 Dependencies
 ------------
 
