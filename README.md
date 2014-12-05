@@ -23,5 +23,5 @@ Usage
 -----
 
 ```
-./bfuzz a.out a b c 
+./ptrfuzz a.out a b c 
 ```
