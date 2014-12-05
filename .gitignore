@@ -4,7 +4,6 @@ ui_*
 *.o
 *.swp
 
-Makefile
 bfuzz
 
 a.out
