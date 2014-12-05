@@ -10,6 +10,7 @@ Makefile.in
 aclocal.m4
 app.info
 compile
+ltmain.sh
 config.h
 config.h.in
 config.log
